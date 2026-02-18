@@ -1,9 +1,5 @@
 #include <Arduino.h>
 
-#define RX
-
-#define TX
-
 void setup() { // initialize UART connection
   Serial.begin(115200);
 
