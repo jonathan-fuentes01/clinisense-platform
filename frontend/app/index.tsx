@@ -1,6 +1,18 @@
-import { Text, View } from "react-native";
+import React, { useEffect } from "react";
+import { Text, View, StyleSheet, Image } from "react-native";
+import { useRouter } from "expo-router";
 
 export default function Index() {
+  const router = useRouter();
+
+  useEffect(() => {
+    const t = setTimeout(() => {
+      router.replace("/onboarding");
+    }, 2000);
+
+    return () => clearTimeout(t);
+  }, [router]);
+  
   return (
     <View
       style={{
@@ -9,7 +21,31 @@ export default function Index() {
         alignItems: "center",
       }}
     >
-      <Text>Edit app/index.tsx to edit this screen.</Text>
+      <Image
+        source={require("../assets/images/flask.png")}
+        style={{
+          width: 120,
+          height: 120,
+          resizeMode: "contain",
+          marginBottom: 20,
+        }}
+      />
+      <Text
+        style={{
+          fontSize: 26,
+          fontWeight: "bold",
+          color: "green",
+        }}
+      >CSULB
+      </Text>
+      <Text 
+        style={{
+          fontSize: 20,
+          marginTop: 6,
+          color: "green",
+        }}
+      >BMES App
+      </Text>
     </View>
   );
 }
