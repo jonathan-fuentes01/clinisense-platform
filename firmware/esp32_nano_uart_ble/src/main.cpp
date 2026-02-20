@@ -1,19 +1,19 @@
 #include <Arduino.h>
+#include <ArduinoJson.h>
+#include <NimBLEDevice.h>
+#include "uart.h"
+#include "ble.cpp"
+#include "data_processing.h"
 
-#define RX
+// initialize queue handles
+QueueHandle_t uartQueue;
+QueueHandle_t bleQueue;
 
-#define TX
-
-void setup() { // initialize UART connection
-  Serial.begin(115200);
-
-  while (!Serial){
-    delay(10); // busy waiting delay until connected
-  }
-
-  Serial.println("Hello World!");
+void setup() {
+    Serial.begin(115200);
 }
 
 void loop() {
-  Serial.println("Hello (inside of the loop)!");
+
 }
+
