@@ -1,0 +1,29 @@
+service: bmes-express
+
+frameworkVersion: '3'
+
+provider:
+  name: aws
+  runtime: nodejs18.x
+  stage: dev
+  region: us-east-2
+  memorySize: 512
+  timeout: 10
+
+functions:
+  app:
+    handler: index.handler
+    events: 
+      - httpApi: '*'
+
+# https://www.serverless.com/plugins/serverless-better-credentials
+
+plugins:
+  - serverless-better-credentials # as the first plugin
+  # - ... other plugins
+
+custom:
+  betterCredentials:
+    # Use this flag to turn off the plugin entirely, which you may want for certain stages.
+    # Defaults to true.
+    enabled: true
