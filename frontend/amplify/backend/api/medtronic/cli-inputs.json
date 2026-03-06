@@ -1,0 +1,16 @@
+{
+  "version": 1,
+  "paths": {
+    "/me": {
+      "name": "/me",
+      "lambdaFunction": "UserMeHandler",
+      "permissions": {
+        "setting": "private",
+        "auth": [
+          "create",
+          "read"
+        ]
+      }
+    }
+  }
+}

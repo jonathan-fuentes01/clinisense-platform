@@ -11,68 +11,62 @@ import {
   ScrollView,
 } from "react-native";
 
+import { confirmSignUp, resendSignUpCode } from "aws-amplify/auth";
 import { router, useLocalSearchParams } from "expo-router";
-import { signIn, fetchAuthSession } from "aws-amplify/auth";
 
-export default function SignIn() {
+export default function Confirm() {
   const params = useLocalSearchParams<{ email?: string }>();
 
-  const [username, setUsername] = useState<string>(
-    (params.email ?? "").toString()
-  );
-  const [password, setPassword] = useState<string>("");
+  const [email, setEmail] = useState<string>((params.email ?? "").toString());
+  const [code, setCode] = useState<string>("");
   const [loading, setLoading] = useState(false);
+  const [resending, setResending] = useState(false);
 
   const Green = "green";
 
   const isValid = useMemo(() => {
-    const emailLike = username.includes("@") && username.includes(".");
-    return emailLike && password.length >= 6;
-  }, [username, password]);
+    const emailLike = email.includes("@") && email.includes(".");
+    return emailLike && code.trim().length >= 4;
+  }, [email, code]);
 
-  const routeByRole = async () => {
-    const session = await fetchAuthSession();
-    const payload: any = session.tokens?.idToken?.payload;
-
-    const groupsRaw = payload?.["cognito:groups"] ?? [];
-    const groups = Array.isArray(groupsRaw) ? groupsRaw : [groupsRaw];
-
-    const isAdmin = groups
-      .filter(Boolean)
-      .map((g: string) => g.toLowerCase())
-      .includes("admin");
-
-    // ✅ Update these if your route names differ
-    if (isAdmin) router.replace("/admin");
-    else router.replace("/doctor");
-  };
-
-  const handleSignIn = async () => {
+  const handleConfirm = async () => {
     if (!isValid) {
-      Alert.alert(
-        "Missing Info",
-        "Please enter a valid Email and a password (6+ characters)."
-      );
+      Alert.alert("Missing Info", "Please enter a valid Email and the code.");
       return;
     }
 
     try {
       setLoading(true);
 
-      const res = await signIn({ username, password });
+      await confirmSignUp({
+        username: email,
+        confirmationCode: code.trim(),
+      });
 
-      // // If user still needs confirmation
-      // if (res.nextStep?.signInStep === "CONFIRM_SIGN_UP") {
-      //   Alert.alert("Confirm Needed", "Please confirm your account first.");
-      //   router.push({ pathname: "/confirm", params: { email: username } });
-      //   return;
-      // }
-
-      await routeByRole();
+      Alert.alert("Success", "Account confirmed! Please login.");
+      router.replace({ pathname: "/signin", params: { email } });
     } catch (e: any) {
-      Alert.alert("Error", e?.message ?? "Sign in failed");
+      Alert.alert("Error", e?.message ?? "Confirmation failed");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleResend = async () => {
+    const emailLike = email.includes("@") && email.includes(".");
+    if (!emailLike) {
+      Alert.alert("Email Required", "Enter your email first so we can resend the code.");
+      return;
+    }
+
+    try {
+      setResending(true);
+      await resendSignUpCode({ username: email });
+      Alert.alert("Sent", "A new confirmation code was sent to your email.");
+    } catch (e: any) {
+      Alert.alert("Error", e?.message ?? "Failed to resend code");
+    } finally {
+      setResending(false);
     }
   };
 
@@ -107,7 +101,7 @@ export default function SignIn() {
         </Text>
 
         <Text style={{ marginTop: 18, fontSize: 18, color: "gray" }}>
-          Login to Detect pH
+          Confirm your account
         </Text>
 
         {/* Form container */}
@@ -123,8 +117,8 @@ export default function SignIn() {
           <View style={{ gap: 6 }}>
             <Text style={{ color: "gray", fontSize: 14 }}>Email</Text>
             <TextInput
-              value={username}
-              onChangeText={setUsername}
+              value={email}
+              onChangeText={setEmail}
               placeholder="johndoe@email.com"
               placeholderTextColor="#9aa0a6"
               autoCapitalize="none"
@@ -140,15 +134,15 @@ export default function SignIn() {
             />
           </View>
 
-          {/* Password */}
+          {/* Code */}
           <View style={{ gap: 6 }}>
-            <Text style={{ color: "gray", fontSize: 14 }}>Password</Text>
+            <Text style={{ color: "gray", fontSize: 14 }}>Confirmation Code</Text>
             <TextInput
-              value={password}
-              onChangeText={setPassword}
-              placeholder="••••••••"
+              value={code}
+              onChangeText={setCode}
+              placeholder="123456"
               placeholderTextColor="#9aa0a6"
-              secureTextEntry
+              keyboardType="number-pad"
               style={{
                 borderWidth: 2,
                 borderColor: "#D9EAD3",
@@ -156,16 +150,14 @@ export default function SignIn() {
                 paddingHorizontal: 14,
                 borderRadius: 16,
                 fontSize: 16,
+                letterSpacing: 2,
               }}
             />
-            <Text style={{ color: "#9aa0a6", fontSize: 12, marginTop: 2 }}>
-              Must be at least 6 characters.
-            </Text>
           </View>
 
-          {/* Primary button */}
+          {/* Confirm button */}
           <TouchableOpacity
-            onPress={handleSignIn}
+            onPress={handleConfirm}
             disabled={!isValid || loading}
             style={{
               marginTop: 14,
@@ -176,13 +168,14 @@ export default function SignIn() {
             }}
           >
             <Text style={{ color: "white", fontSize: 16, fontWeight: "600" }}>
-              {loading ? "Logging in..." : "Login"}
+              {loading ? "Confirming..." : "Confirm Account"}
             </Text>
           </TouchableOpacity>
 
-          {/* Secondary buttons */}
+          {/* Resend */}
           <TouchableOpacity
-            onPress={() => router.push("/signup")}
+            onPress={handleResend}
+            disabled={resending}
             style={{
               marginTop: 10,
               backgroundColor: "white",
@@ -194,11 +187,27 @@ export default function SignIn() {
             }}
           >
             <Text style={{ color: Green, fontSize: 16, fontWeight: "600" }}>
-              Sign Up
+              {resending ? "Resending..." : "Resend Code"}
             </Text>
           </TouchableOpacity>
 
-         
+          {/* Back to login */}
+          <TouchableOpacity
+            onPress={() => router.push("/signin")}
+            style={{
+              marginTop: 10,
+              backgroundColor: "white",
+              borderColor: Green,
+              borderWidth: 2,
+              paddingVertical: 18,
+              borderRadius: 30,
+              alignItems: "center",
+            }}
+          >
+            <Text style={{ color: Green, fontSize: 16, fontWeight: "600" }}>
+              Back to Login
+            </Text>
+          </TouchableOpacity>
         </View>
       </ScrollView>
     </KeyboardAvoidingView>

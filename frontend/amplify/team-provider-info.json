@@ -1,0 +1,33 @@
+{
+  "dev": {
+    "awscloudformation": {
+      "AuthRoleName": "amplify-medtronic-dev-d1cf5-authRole",
+      "UnauthRoleArn": "arn:aws:iam::217340893921:role/amplify-medtronic-dev-d1cf5-unauthRole",
+      "AuthRoleArn": "arn:aws:iam::217340893921:role/amplify-medtronic-dev-d1cf5-authRole",
+      "Region": "us-east-2",
+      "DeploymentBucketName": "amplify-medtronic-dev-d1cf5-deployment",
+      "UnauthRoleName": "amplify-medtronic-dev-d1cf5-unauthRole",
+      "StackName": "amplify-medtronic-dev-d1cf5",
+      "StackId": "arn:aws:cloudformation:us-east-2:217340893921:stack/amplify-medtronic-dev-d1cf5/419c07e0-18e8-11f1-845a-0673ca97c387",
+      "AmplifyAppId": "dyy7cxzpankg5",
+      "APIGatewayAuthURL": "https://s3.amazonaws.com/amplify-medtronic-dev-d1cf5-deployment/amplify-cfn-templates/api/APIGatewayAuthStack.json"
+    },
+    "categories": {
+      "auth": {
+        "medtronic0d9d813a": {}
+      },
+      "storage": {
+        "userTable": {}
+      },
+      "function": {
+        "UserMeHandler": {
+          "deploymentBucketName": "amplify-medtronic-dev-d1cf5-deployment",
+          "s3Key": "amplify-builds/UserMeHandler-4b30723174316c735138-build.zip"
+        }
+      },
+      "api": {
+        "medtronic": {}
+      }
+    }
+  }
+}
