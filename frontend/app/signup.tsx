@@ -47,8 +47,7 @@ export default function SignUp() {
           userAttributes: {
             email: username, // Cognito requires EMAIL
             name: fullName,
-            // NOTE: role is not a standard Cognito attribute unless you created a custom attribute.
-            // We'll keep it in local state for now.
+           
           },
         },
       });

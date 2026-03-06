@@ -42,7 +42,6 @@ export default function SignIn() {
       .map((g: string) => g.toLowerCase())
       .includes("admin");
 
-    // ✅ Update these if your route names differ
     if (isAdmin) router.replace("/admin");
     else router.replace("/doctor");
   };
