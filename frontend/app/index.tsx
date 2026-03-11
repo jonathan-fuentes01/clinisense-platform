@@ -7,7 +7,12 @@ export default function Index() {
 
   useEffect(() => {
     const t = setTimeout(() => {
+      //default:
       router.replace("/onboarding");
+
+      //testing:
+      //router.replace("/doctor")
+      //router.replace("/admin")
     }, 2000);
 
     return () => clearTimeout(t);
