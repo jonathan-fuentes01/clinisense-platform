@@ -1,10 +1,7 @@
-#ifndef UART_CPP
-#define UART_CPP
+#ifndef UART_PH_H
+#define UART_PH_H
 
-// Pin Number for RX and TX
-#define RX0 14
-#define TX1 15
-
+#define BAUD_RATE 115200
 void uartTask(void *pvParameters);
 
 #endif
