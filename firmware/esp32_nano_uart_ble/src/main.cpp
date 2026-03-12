@@ -1,17 +1,15 @@
-#include <ArduinoJson.h>
-#include <NimBLEDevice.h>
+#include <stdexcept>
+#include <iostream>
 #include "queues.h"
 #include "uart.h"
 #include "ble.h"
 #include "data_processing.h"
-#include <stdexcept>
-#include <iostream>
 
 void setup() {
-    Serial.begin(115200);
+    Serial.begin(BAUD_RATE);
 
-    phQueue = xQueueCreate(5, sizeof(uint32_t));
-    bleQueue = xQueueCreate(5, 128);
+    phQueue = xQueueCreate(UART_ITEMS, UART_MSG_SIZE);
+    bleQueue = xQueueCreate(BLE_ITEMS, BLE_MSG_SIZE);
 
     if (bleQueue == NULL){
         throw std::runtime_error("The BLE queue has not been created.");
@@ -25,7 +23,7 @@ void setup() {
         "Bluetooth Task",
         4096,
         NULL,
-        1,
+        2,
         NULL
     );
 
@@ -43,7 +41,7 @@ void setup() {
         "Data Processing Task",
         4096,
         NULL,
-        1,
+        3,
         NULL
     );
 }
