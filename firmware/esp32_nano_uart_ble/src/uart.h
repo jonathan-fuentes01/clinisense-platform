@@ -4,7 +4,9 @@
 // Pin Number for RX and TX
 #define RX0 14
 #define TX1 15
+
 void uartTask(void *pvParameters);
+QueueHandle_t phQueue;
 
 #endif
 
