@@ -9,7 +9,7 @@ void processingTask(void *pvParameters){
         if (xQueueReceive(phQueue, &raw, portMAX_DELAY)){
             float ph = voltageConversion(raw);
 
-            StaticJsonDocument<BLE_MSG_SIZE> doc;
+            JsonDocument doc;
 
             doc["Voltage"] = raw;
             doc["pH Value"] = ph;

@@ -5,6 +5,10 @@
 #include "ble.h"
 #include "data_processing.h"
 
+QueueHandle_t bleQueue = NULL;
+QueueHandle_t phQueue = NULL;
+NimBLECharacteristic* pCharacteristic = nullptr;
+
 void setup() {
     Serial.begin(BAUD_RATE);
 
@@ -44,4 +48,8 @@ void setup() {
         3,
         NULL
     );
+}
+
+void loop(){
+
 }
