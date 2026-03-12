@@ -6,7 +6,6 @@
 #define TX1 15
 
 void uartTask(void *pvParameters);
-QueueHandle_t phQueue;
 
 #endif
 
