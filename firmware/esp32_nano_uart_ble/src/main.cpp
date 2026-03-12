@@ -25,7 +25,7 @@ void setup() {
     xTaskCreate(
         bleTask,
         "Bluetooth Task",
-        4096,
+        10000,
         NULL,
         2,
         NULL

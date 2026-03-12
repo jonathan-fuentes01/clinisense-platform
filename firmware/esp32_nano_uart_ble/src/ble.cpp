@@ -64,12 +64,15 @@ void bleTask(void *pvParameters){
     char buffer[BLE_MSG_SIZE];
 
     while (1){
-        if(xQueueReceive(bleQueue, &buffer, portMAX_DELAY)){
-            pCharacteristic->setValue(buffer);
-            pCharacteristic->notify();
-
+        if(xQueueReceive(bleQueue, buffer, portMAX_DELAY)){
+            if(connected){
+                pCharacteristic->setValue(buffer);
+                pCharacteristic->notify();
+            }
             Serial.print("Data sent: ");
             Serial.println(buffer);
+
+            vTaskDelay(pdMS_TO_TICKS(2000));
         }
     }
 }
