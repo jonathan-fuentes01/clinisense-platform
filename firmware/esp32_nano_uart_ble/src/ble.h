@@ -7,6 +7,7 @@
 
 bool connected;
 NimBLECharacteristic* pCharacteristic;
+
 void bleTask(void *pvParameters);
 void setupBLE();
 
