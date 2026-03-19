@@ -8,8 +8,8 @@ export async function saveUserProfile(data: {
   role: "admin" | "doctor";
 }) {
   const operation = post({
-    apiName: "medtronic", // must match aws-exports
-    path: "/me",
+    apiName: "MedtronicHealthAPI", // must match aws-exports
+    path: "/users",
     options: {
       body: data,
     },
@@ -19,10 +19,13 @@ export async function saveUserProfile(data: {
   return await body.json();
 }
 
-export async function fetchUserProfile() {
+export async function fetchUserProfile(email: string) {
   const operation = get({
-    apiName: "medtronic",
-    path: "/me",
+    apiName: "MedtronicHealthAPI",
+    path: "/users",
+    options: {
+      queryParams: { email },
+    },
   });
 
   const { body } = await operation.response;

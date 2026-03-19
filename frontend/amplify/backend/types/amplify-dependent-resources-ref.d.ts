@@ -1,6 +1,6 @@
 export type AmplifyDependentResourcesAttributes = {
   "api": {
-    "medtronic": {
+    "MedtronicHealthAPI": {
       "ApiId": "string",
       "ApiName": "string",
       "RootUrl": "string"

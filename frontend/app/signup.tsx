@@ -11,18 +11,26 @@ import {
   ScrollView,
 } from "react-native";
 
+
+// sign up logic from the AWS Amplify documentation: https://docs.amplify.aws/lib/auth/emailpassword/q/platform/react-native/#sign-up
 import { signUp } from "aws-amplify/auth";
 import { router } from "expo-router";
 
+
+// Define the possible roles for type safety
 type Role = "admin" | "doctor";
 
 export default function SignUp() {
+
+  // set up state for the form fields and loading state
   const [fullName, setFullName] = useState<string>("");
   const [username, setUsername] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [role, setRole] = useState<Role>("doctor");
   const [loading, setLoading] = useState(false);
 
+
+  // validate the form fields (basic checks) 
   const isValid = useMemo(() => {
     const emailLike = username.includes("@") && username.includes(".");
     return fullName.trim().length >= 2 && emailLike && password.length >= 6;
@@ -40,6 +48,10 @@ export default function SignUp() {
     try {
       setLoading(true);
 
+
+      // signUp: username and password are required, the rest (attributes) are optional. 
+      // We use the "options" parameter to pass user attributes like email and name. 
+      // The "role" can also be saved as a custom attribute if needed, but for this example, we'll just handle routing based on selection.
       await signUp({
         username,
         password,
@@ -53,7 +65,11 @@ export default function SignUp() {
       });
 
       Alert.alert("Success", "Check email for confirmation code.");
-      router.push("/confirm");
+      router.push({ pathname: "/confirm", params: { email: username, fullName, role } });
+
+      // ERROR HANDLING: Amplify's signUp can throw errors for various reasons 
+      // (e.g., username already exists, weak password, network issues). 
+      // We catch these and display an alert with the error message to the user.
     } catch (e: any) {
       Alert.alert("Error", e?.message ?? "Sign up failed");
     } finally {
@@ -225,9 +241,9 @@ export default function SignUp() {
               </TouchableOpacity>
             </View>
 
-            <Text style={{ color: "#9aa0a6", fontSize: 12, marginTop: 8 }}>
+            {/* <Text style={{ color: "#9aa0a6", fontSize: 12, marginTop: 8 }}>
               (Role will be saved later in DynamoDB/API — currently used for routing.)
-            </Text>
+            </Text> */}
           </View>
 
           {/* Primary button (match onboarding "Login" style) */}

@@ -5,13 +5,14 @@ import {
   Image,
   TextInput,
   TouchableOpacity,
-  Alert,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
 } from "react-native";
 
 import { router, useLocalSearchParams } from "expo-router";
+
+// sign in logic from the AWS Amplify documentation: https://docs.amplify.aws/lib/auth/emailpassword/q/platform/react-native/#sign-in
 import { signIn, fetchAuthSession } from "aws-amplify/auth";
 
 export default function SignIn() {
@@ -22,6 +23,7 @@ export default function SignIn() {
   );
   const [password, setPassword] = useState<string>("");
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string>("");
 
   const Green = "green";
 
@@ -32,44 +34,49 @@ export default function SignIn() {
 
   const routeByRole = async () => {
     const session = await fetchAuthSession();
+
     const payload: any = session.tokens?.idToken?.payload;
+    console.log("[routeByRole] payload:", JSON.stringify(payload));
 
     const groupsRaw = payload?.["cognito:groups"] ?? [];
     const groups = Array.isArray(groupsRaw) ? groupsRaw : [groupsRaw];
+    console.log("[routeByRole] groups:", groups);
 
     const isAdmin = groups
       .filter(Boolean)
       .map((g: string) => g.toLowerCase())
       .includes("admin");
 
+    console.log("[routeByRole] isAdmin:", isAdmin, "→ navigating to:", isAdmin ? "/admin" : "/doctor");
+
     if (isAdmin) router.replace("/admin");
     else router.replace("/doctor");
   };
 
   const handleSignIn = async () => {
+    console.log("[handleSignIn] called, isValid:", isValid, "username:", username, "passwordLen:", password.length);
+    setError("");
+
     if (!isValid) {
-      Alert.alert(
-        "Missing Info",
-        "Please enter a valid Email and a password (6+ characters)."
-      );
+      setError("Please enter a valid Email and a password (6+ characters).");
       return;
     }
 
     try {
       setLoading(true);
-
-      const res = await signIn({ username, password });
-
-      // // If user still needs confirmation
-      // if (res.nextStep?.signInStep === "CONFIRM_SIGN_UP") {
-      //   Alert.alert("Confirm Needed", "Please confirm your account first.");
-      //   router.push({ pathname: "/confirm", params: { email: username } });
-      //   return;
-      // }
-
+      console.log("[handleSignIn] calling signIn...");
+      await signIn({ username, password });
+      console.log("[handleSignIn] signIn succeeded, calling routeByRole...");
       await routeByRole();
     } catch (e: any) {
-      Alert.alert("Error", e?.message ?? "Sign in failed");
+      // If a session already exists, skip re-auth and route directly
+      if (e?.name === "UserAlreadyAuthenticatedException") {
+        console.log("[handleSignIn] already authenticated, routing by role...");
+        await routeByRole();
+        return;
+      }
+      console.error("[handleSignIn] error:", e);
+      setError(e?.message ?? "Sign in failed");
     } finally {
       setLoading(false);
     }
@@ -161,6 +168,13 @@ export default function SignIn() {
               Must be at least 6 characters.
             </Text>
           </View>
+
+          {/* Inline error */}
+          {error ? (
+            <Text style={{ color: "red", fontSize: 13, textAlign: "center" }}>
+              {error}
+            </Text>
+          ) : null}
 
           {/* Primary button */}
           <TouchableOpacity

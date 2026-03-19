@@ -164,6 +164,42 @@
           ]
         }
       }
+    },
+    "CustomLambdaExecutionPolicy": {
+      "Type": "AWS::IAM::Policy",
+      "Properties": {
+        "PolicyName": "custom-lambda-execution-policy",
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Action": [
+                "dynamodb:PutItem",
+                "dynamodb:GetItem"
+              ],
+              "Resource": [
+                "arn:aws:dynamodb:us-east-2:*:table/Users-dev"
+              ],
+              "Effect": "Allow"
+            },
+            {
+              "Action": [
+                "cognito-idp:AdminAddUserToGroup"
+              ],
+              "Resource": [
+                "arn:aws:cognito-idp:us-east-2:*:userpool/us-east-2_XKq4cKesI"
+              ],
+              "Effect": "Allow"
+            }
+          ]
+        },
+        "Roles": [
+          {
+            "Ref": "LambdaExecutionRole"
+          }
+        ]
+      },
+      "DependsOn": "LambdaExecutionRole"
     }
   },
   "Outputs": {
