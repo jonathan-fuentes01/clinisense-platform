@@ -13,7 +13,7 @@ See the License for the specific language governing permissions and limitations 
 const express = require('express')
 const bodyParser = require('body-parser')
 const awsServerlessExpressMiddleware = require('aws-serverless-express/middleware')
-const { DynamoDBClient, PutItemCommand, GetItemCommand, QueryCommand, TransactWriteItemsCommand } = require('@aws-sdk/client-dynamodb')
+const { DynamoDBClient, PutItemCommand, GetItemCommand, QueryCommand, TransactWriteItemsCommand, ScanCommand } = require('@aws-sdk/client-dynamodb')
 const { CognitoIdentityProviderClient, AdminAddUserToGroupCommand } = require('@aws-sdk/client-cognito-identity-provider')
 
 const REGION = process.env.REGION || 'us-east-2'
@@ -142,6 +142,29 @@ app.delete('/users', function(req, res) {
 app.delete('/me/*', function(req, res) {
   // Add your code here
   res.json({success: 'delete call succeed!', url: req.url});
+});
+
+// ─── DOCTOR LIST ENDPOINT ─────────────────────────────────────────────────────
+
+// GET /doctors — list all users with role = "doctor"
+app.get('/doctors', async function(req, res) {
+  try {
+    const result = await dynamo.send(new ScanCommand({
+      TableName: TABLE_NAME,
+      FilterExpression: '#r = :role',
+      ExpressionAttributeNames: { '#r': 'role' },
+      ExpressionAttributeValues: { ':role': { S: 'doctor' } },
+      ProjectionExpression: 'userId, fullName',
+    }));
+    const doctors = (result.Items || []).map(i => ({
+      userId:   i.userId?.S,
+      fullName: i.fullName?.S,
+    }));
+    res.json({ doctors });
+  } catch (err) {
+    console.error('Get doctors error:', err);
+    res.status(500).json({ error: 'Failed to fetch doctors' });
+  }
 });
 
 // ─── PATIENT ENDPOINTS ────────────────────────────────────────────────────────

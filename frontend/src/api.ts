@@ -63,6 +63,15 @@ export async function reassignPatient(patientId: string, newDoctorId: string) {
   return await body.json();
 }
 
+export async function getDoctors() {
+  const operation = get({
+    apiName: "MedtronicHealthAPI",
+    path: "/doctors",
+  });
+  const { body } = await operation.response;
+  return await body.json();
+}
+
 export async function fetchUserProfile(email: string) {
   const operation = get({
     apiName: "MedtronicHealthAPI",

@@ -2,7 +2,8 @@
   {
     "Action": [
       "dynamodb:PutItem",
-      "dynamodb:GetItem"
+      "dynamodb:GetItem",
+      "dynamodb:Scan"
     ],
     "Resource": [
       "arn:aws:dynamodb:us-east-2:*:table/Users-dev"

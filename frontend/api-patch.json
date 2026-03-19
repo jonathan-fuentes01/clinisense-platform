@@ -1,0 +1,185 @@
+{
+  "swagger": "2.0",
+  "info": { "title": "MedtronicHealthAPI", "version": "2018-05-24T17:52:00Z" },
+  "host": "apigateway.us-east-2.amazonaws.com",
+  "basePath": "/dev",
+  "schemes": ["https"],
+  "paths": {
+    "/patients": {
+      "options": {
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "responses": {
+          "200": {
+            "description": "200 response",
+            "headers": {
+              "Access-Control-Allow-Origin": { "type": "string" },
+              "Access-Control-Allow-Methods": { "type": "string" },
+              "Access-Control-Allow-Headers": { "type": "string" }
+            }
+          }
+        },
+        "x-amazon-apigateway-integration": {
+          "type": "mock",
+          "requestTemplates": { "application/json": "{\"statusCode\": 200}" },
+          "passthroughBehavior": "when_no_match",
+          "responses": {
+            "default": {
+              "statusCode": "200",
+              "responseParameters": {
+                "method.response.header.Access-Control-Allow-Methods": "'DELETE,GET,HEAD,OPTIONS,PATCH,POST,PUT'",
+                "method.response.header.Access-Control-Allow-Headers": "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,X-Amz-User-Agent'",
+                "method.response.header.Access-Control-Allow-Origin": "'*'"
+              }
+            }
+          }
+        }
+      },
+      "x-amazon-apigateway-any-method": {
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "responses": { "200": { "description": "200 response" } },
+        "x-amazon-apigateway-integration": {
+          "type": "aws_proxy",
+          "httpMethod": "POST",
+          "uri": "arn:aws:apigateway:us-east-2:lambda:path/2015-03-31/functions/arn:aws:lambda:us-east-2:217340893921:function:UserMeHandler-dev/invocations",
+          "passthroughBehavior": "when_no_match",
+          "responses": { "default": { "statusCode": "200" } }
+        }
+      }
+    },
+    "/patients/{proxy+}": {
+      "options": {
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "parameters": [{ "name": "proxy", "in": "path", "required": true, "type": "string" }],
+        "responses": {
+          "200": {
+            "description": "200 response",
+            "headers": {
+              "Access-Control-Allow-Origin": { "type": "string" },
+              "Access-Control-Allow-Methods": { "type": "string" },
+              "Access-Control-Allow-Headers": { "type": "string" }
+            }
+          }
+        },
+        "x-amazon-apigateway-integration": {
+          "type": "mock",
+          "requestTemplates": { "application/json": "{\"statusCode\": 200}" },
+          "passthroughBehavior": "when_no_match",
+          "responses": {
+            "default": {
+              "statusCode": "200",
+              "responseParameters": {
+                "method.response.header.Access-Control-Allow-Methods": "'DELETE,GET,HEAD,OPTIONS,PATCH,POST,PUT'",
+                "method.response.header.Access-Control-Allow-Headers": "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,X-Amz-User-Agent'",
+                "method.response.header.Access-Control-Allow-Origin": "'*'"
+              }
+            }
+          }
+        }
+      },
+      "x-amazon-apigateway-any-method": {
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "parameters": [{ "name": "proxy", "in": "path", "required": true, "type": "string" }],
+        "responses": { "200": { "description": "200 response" } },
+        "x-amazon-apigateway-integration": {
+          "type": "aws_proxy",
+          "httpMethod": "POST",
+          "uri": "arn:aws:apigateway:us-east-2:lambda:path/2015-03-31/functions/arn:aws:lambda:us-east-2:217340893921:function:UserMeHandler-dev/invocations",
+          "passthroughBehavior": "when_no_match",
+          "responses": { "default": { "statusCode": "200" } }
+        }
+      }
+    },
+    "/doctors": {
+      "options": {
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "responses": {
+          "200": {
+            "description": "200 response",
+            "headers": {
+              "Access-Control-Allow-Origin": { "type": "string" },
+              "Access-Control-Allow-Methods": { "type": "string" },
+              "Access-Control-Allow-Headers": { "type": "string" }
+            }
+          }
+        },
+        "x-amazon-apigateway-integration": {
+          "type": "mock",
+          "requestTemplates": { "application/json": "{\"statusCode\": 200}" },
+          "passthroughBehavior": "when_no_match",
+          "responses": {
+            "default": {
+              "statusCode": "200",
+              "responseParameters": {
+                "method.response.header.Access-Control-Allow-Methods": "'DELETE,GET,HEAD,OPTIONS,PATCH,POST,PUT'",
+                "method.response.header.Access-Control-Allow-Headers": "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,X-Amz-User-Agent'",
+                "method.response.header.Access-Control-Allow-Origin": "'*'"
+              }
+            }
+          }
+        }
+      },
+      "x-amazon-apigateway-any-method": {
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "responses": { "200": { "description": "200 response" } },
+        "x-amazon-apigateway-integration": {
+          "type": "aws_proxy",
+          "httpMethod": "POST",
+          "uri": "arn:aws:apigateway:us-east-2:lambda:path/2015-03-31/functions/arn:aws:lambda:us-east-2:217340893921:function:UserMeHandler-dev/invocations",
+          "passthroughBehavior": "when_no_match",
+          "responses": { "default": { "statusCode": "200" } }
+        }
+      }
+    },
+    "/doctors/{proxy+}": {
+      "options": {
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "parameters": [{ "name": "proxy", "in": "path", "required": true, "type": "string" }],
+        "responses": {
+          "200": {
+            "description": "200 response",
+            "headers": {
+              "Access-Control-Allow-Origin": { "type": "string" },
+              "Access-Control-Allow-Methods": { "type": "string" },
+              "Access-Control-Allow-Headers": { "type": "string" }
+            }
+          }
+        },
+        "x-amazon-apigateway-integration": {
+          "type": "mock",
+          "requestTemplates": { "application/json": "{\"statusCode\": 200}" },
+          "passthroughBehavior": "when_no_match",
+          "responses": {
+            "default": {
+              "statusCode": "200",
+              "responseParameters": {
+                "method.response.header.Access-Control-Allow-Methods": "'DELETE,GET,HEAD,OPTIONS,PATCH,POST,PUT'",
+                "method.response.header.Access-Control-Allow-Headers": "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,X-Amz-User-Agent'",
+                "method.response.header.Access-Control-Allow-Origin": "'*'"
+              }
+            }
+          }
+        }
+      },
+      "x-amazon-apigateway-any-method": {
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "parameters": [{ "name": "proxy", "in": "path", "required": true, "type": "string" }],
+        "responses": { "200": { "description": "200 response" } },
+        "x-amazon-apigateway-integration": {
+          "type": "aws_proxy",
+          "httpMethod": "POST",
+          "uri": "arn:aws:apigateway:us-east-2:lambda:path/2015-03-31/functions/arn:aws:lambda:us-east-2:217340893921:function:UserMeHandler-dev/invocations",
+          "passthroughBehavior": "when_no_match",
+          "responses": { "default": { "statusCode": "200" } }
+        }
+      }
+    }
+  }
+}

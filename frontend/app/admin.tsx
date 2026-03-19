@@ -7,13 +7,12 @@ import {
   FlatList,
   Modal,
   ActivityIndicator,
-  ScrollView,
   KeyboardAvoidingView,
   Platform,
 } from "react-native";
 import { router } from "expo-router";
 import { signOut, fetchAuthSession } from "aws-amplify/auth";
-import { createPatient, getAllPatients, reassignPatient } from "../src/api";
+import { createPatient, getAllPatients, reassignPatient, getDoctors } from "../src/api";
 
 const Green = "green";
 
@@ -26,33 +25,116 @@ type Patient = {
   createdAt: string;
 };
 
+type Doctor = {
+  userId: string;
+  fullName: string;
+};
+
+// ─── Reusable doctor picker field ────────────────────────────────────────────
+function DoctorPicker({
+  doctors,
+  selected,
+  onSelect,
+  label,
+}: {
+  doctors: Doctor[];
+  selected: Doctor | null;
+  onSelect: (d: Doctor) => void;
+  label: string;
+}) {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <>
+      <Text style={{ color: "gray", fontSize: 13, marginBottom: 4 }}>{label}</Text>
+      <TouchableOpacity
+        onPress={() => setOpen(true)}
+        style={{
+          borderWidth: 1,
+          borderColor: "#D9EAD3",
+          borderRadius: 10,
+          padding: 12,
+          marginBottom: 12,
+          flexDirection: "row",
+          justifyContent: "space-between",
+          alignItems: "center",
+        }}
+      >
+        <Text style={{ color: selected ? "#000" : "#aaa", fontSize: 15 }}>
+          {selected ? `${selected.fullName}  (${selected.userId})` : "Select a doctor..."}
+        </Text>
+        <Text style={{ color: "gray", fontSize: 12 }}>▼</Text>
+      </TouchableOpacity>
+
+      <Modal visible={open} animationType="fade" transparent>
+        <TouchableOpacity
+          style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.4)", justifyContent: "center", paddingHorizontal: 24 }}
+          activeOpacity={1}
+          onPress={() => setOpen(false)}
+        >
+          <View style={{ backgroundColor: "white", borderRadius: 16, maxHeight: 360, overflow: "hidden" }}>
+            <View style={{ padding: 16, borderBottomWidth: 1, borderColor: "#eee" }}>
+              <Text style={{ fontWeight: "600", fontSize: 16 }}>Select Doctor</Text>
+            </View>
+            {doctors.length === 0 ? (
+              <Text style={{ color: "gray", textAlign: "center", padding: 24 }}>No doctors found.</Text>
+            ) : (
+              <FlatList
+                data={doctors}
+                keyExtractor={(d) => d.userId}
+                renderItem={({ item }) => (
+                  <TouchableOpacity
+                    onPress={() => { onSelect(item); setOpen(false); }}
+                    style={{
+                      padding: 16,
+                      borderBottomWidth: 1,
+                      borderColor: "#f0f0f0",
+                      backgroundColor: selected?.userId === item.userId ? "#F0FAF0" : "white",
+                    }}
+                  >
+                    <Text style={{ fontWeight: "600", fontSize: 15 }}>{item.fullName}</Text>
+                    <Text style={{ color: "gray", fontSize: 12, marginTop: 2 }}>{item.userId}</Text>
+                  </TouchableOpacity>
+                )}
+              />
+            )}
+          </View>
+        </TouchableOpacity>
+      </Modal>
+    </>
+  );
+}
+// ─────────────────────────────────────────────────────────────────────────────
+
 export default function AdminPage() {
   const [patients, setPatients] = useState<Patient[]>([]);
   const [loadingPatients, setLoadingPatients] = useState(true);
+  const [doctors, setDoctors] = useState<Doctor[]>([]);
   const [adminId, setAdminId] = useState("");
 
   // Create patient modal state
   const [showCreate, setShowCreate] = useState(false);
   const [newName, setNewName] = useState("");
   const [newAge, setNewAge] = useState("");
-  const [newDoctorId, setNewDoctorId] = useState("");
+  const [selectedCreateDoctor, setSelectedCreateDoctor] = useState<Doctor | null>(null);
   const [creating, setCreating] = useState(false);
   const [createError, setCreateError] = useState("");
 
   // Reassign modal state
   const [reassignPatient_, setReassignPatient] = useState<Patient | null>(null);
-  const [reassignDoctorId, setReassignDoctorId] = useState("");
+  const [selectedReassignDoctor, setSelectedReassignDoctor] = useState<Doctor | null>(null);
   const [reassigning, setReassigning] = useState(false);
   const [reassignError, setReassignError] = useState("");
 
   useEffect(() => {
     loadAdminId();
     loadPatients();
+    loadDoctors();
   }, []);
 
   const loadAdminId = async () => {
     const session = await fetchAuthSession();
-    const email = session.tokens?.idToken?.payload?.email as string ?? "";
+    const email = (session.tokens?.idToken?.payload?.email as string) ?? "";
     setAdminId(email);
   };
 
@@ -68,10 +150,19 @@ export default function AdminPage() {
     }
   };
 
+  const loadDoctors = async () => {
+    try {
+      const data: any = await getDoctors();
+      setDoctors(data.doctors || []);
+    } catch (e) {
+      console.error("Failed to load doctors:", e);
+    }
+  };
+
   const handleCreatePatient = async () => {
     setCreateError("");
-    if (!newName.trim() || !newDoctorId.trim()) {
-      setCreateError("Full name and Doctor ID are required.");
+    if (!newName.trim() || !selectedCreateDoctor) {
+      setCreateError("Full name and doctor selection are required.");
       return;
     }
     try {
@@ -79,13 +170,13 @@ export default function AdminPage() {
       await createPatient({
         fullName: newName.trim(),
         age: parseInt(newAge) || 0,
-        doctorId: newDoctorId.trim(),
+        doctorId: selectedCreateDoctor.userId,
         createdByAdminId: adminId,
       });
       setShowCreate(false);
       setNewName("");
       setNewAge("");
-      setNewDoctorId("");
+      setSelectedCreateDoctor(null);
       await loadPatients();
     } catch (e: any) {
       setCreateError(e?.message ?? "Failed to create patient.");
@@ -96,15 +187,15 @@ export default function AdminPage() {
 
   const handleReassign = async () => {
     setReassignError("");
-    if (!reassignDoctorId.trim()) {
-      setReassignError("New Doctor ID is required.");
+    if (!selectedReassignDoctor) {
+      setReassignError("Please select a doctor.");
       return;
     }
     try {
       setReassigning(true);
-      await reassignPatient(reassignPatient_!.patientId, reassignDoctorId.trim());
+      await reassignPatient(reassignPatient_!.patientId, selectedReassignDoctor.userId);
       setReassignPatient(null);
-      setReassignDoctorId("");
+      setSelectedReassignDoctor(null);
       await loadPatients();
     } catch (e: any) {
       setReassignError(e?.message ?? "Failed to reassign patient.");
@@ -152,28 +243,34 @@ export default function AdminPage() {
           <FlatList
             data={patients}
             keyExtractor={(item) => item.patientId}
-            renderItem={({ item }) => (
-              <View style={{ borderWidth: 1, borderColor: "#D9EAD3", borderRadius: 12, padding: 14, marginBottom: 10 }}>
-                <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
-                  <Text style={{ fontWeight: "600", fontSize: 16 }}>{item.fullName}</Text>
-                  <Text style={{ color: item.status === "active" ? Green : "gray", fontSize: 12 }}>
-                    {item.status}
+            renderItem={({ item }) => {
+              const doc = doctors.find((d) => d.userId === item.assignedDoctorId);
+              const doctorLabel = doc
+                ? `${doc.fullName}  (${doc.userId})`
+                : item.assignedDoctorId;
+              return (
+                <View style={{ borderWidth: 1, borderColor: "#D9EAD3", borderRadius: 12, padding: 14, marginBottom: 10 }}>
+                  <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
+                    <Text style={{ fontWeight: "600", fontSize: 16 }}>{item.fullName}</Text>
+                    <Text style={{ color: item.status === "active" ? Green : "gray", fontSize: 12 }}>
+                      {item.status}
+                    </Text>
+                  </View>
+                  <Text style={{ color: "gray", fontSize: 13, marginTop: 4 }}>
+                    ID: {item.patientId}  ·  Age: {item.age}
                   </Text>
+                  <Text style={{ color: "gray", fontSize: 13 }}>
+                    Doctor: {doctorLabel}
+                  </Text>
+                  <TouchableOpacity
+                    onPress={() => { setReassignPatient(item); setSelectedReassignDoctor(null); }}
+                    style={{ marginTop: 10, borderWidth: 1, borderColor: Green, borderRadius: 20, paddingVertical: 6, alignItems: "center" }}
+                  >
+                    <Text style={{ color: Green, fontSize: 13, fontWeight: "600" }}>Reassign Doctor</Text>
+                  </TouchableOpacity>
                 </View>
-                <Text style={{ color: "gray", fontSize: 13, marginTop: 4 }}>
-                  ID: {item.patientId}  ·  Age: {item.age}
-                </Text>
-                <Text style={{ color: "gray", fontSize: 13 }}>
-                  Doctor: {item.assignedDoctorId}
-                </Text>
-                <TouchableOpacity
-                  onPress={() => { setReassignPatient(item); setReassignDoctorId(""); }}
-                  style={{ marginTop: 10, borderWidth: 1, borderColor: Green, borderRadius: 20, paddingVertical: 6, alignItems: "center" }}
-                >
-                  <Text style={{ color: Green, fontSize: 13, fontWeight: "600" }}>Reassign Doctor</Text>
-                </TouchableOpacity>
-              </View>
-            )}
+              );
+            }}
           />
         )}
       </View>
@@ -189,7 +286,7 @@ export default function AdminPage() {
               <TextInput
                 value={newName}
                 onChangeText={setNewName}
-                placeholder="Jane Doe"
+                placeholder="please enter patient full name"
                 style={{ borderWidth: 1, borderColor: "#D9EAD3", borderRadius: 10, padding: 12, marginBottom: 12 }}
               />
 
@@ -197,18 +294,16 @@ export default function AdminPage() {
               <TextInput
                 value={newAge}
                 onChangeText={setNewAge}
-                placeholder="45"
+                placeholder="please enter patient age"
                 keyboardType="number-pad"
                 style={{ borderWidth: 1, borderColor: "#D9EAD3", borderRadius: 10, padding: 12, marginBottom: 12 }}
               />
 
-              <Text style={{ color: "gray", fontSize: 13, marginBottom: 4 }}>Doctor ID *</Text>
-              <TextInput
-                value={newDoctorId}
-                onChangeText={setNewDoctorId}
-                placeholder="D-001"
-                autoCapitalize="none"
-                style={{ borderWidth: 1, borderColor: "#D9EAD3", borderRadius: 10, padding: 12, marginBottom: 12 }}
+              <DoctorPicker
+                doctors={doctors}
+                selected={selectedCreateDoctor}
+                onSelect={setSelectedCreateDoctor}
+                label="Assign Doctor *"
               />
 
               {createError ? <Text style={{ color: "red", fontSize: 13, marginBottom: 8 }}>{createError}</Text> : null}
@@ -221,7 +316,7 @@ export default function AdminPage() {
                 <Text style={{ color: "white", fontWeight: "600" }}>{creating ? "Creating..." : "Create Patient"}</Text>
               </TouchableOpacity>
 
-              <TouchableOpacity onPress={() => { setShowCreate(false); setCreateError(""); }} style={{ alignItems: "center", padding: 12 }}>
+              <TouchableOpacity onPress={() => { setShowCreate(false); setCreateError(""); setSelectedCreateDoctor(null); }} style={{ alignItems: "center", padding: 12 }}>
                 <Text style={{ color: "gray" }}>Cancel</Text>
               </TouchableOpacity>
             </View>
@@ -236,16 +331,14 @@ export default function AdminPage() {
             <View style={{ backgroundColor: "white", borderTopLeftRadius: 20, borderTopRightRadius: 20, padding: 24 }}>
               <Text style={{ fontSize: 18, fontWeight: "bold", marginBottom: 4 }}>Reassign Doctor</Text>
               <Text style={{ color: "gray", fontSize: 13, marginBottom: 16 }}>
-                Patient: {reassignPatient_?.fullName} · Current: {reassignPatient_?.assignedDoctorId}
+                Patient: {reassignPatient_?.fullName}
               </Text>
 
-              <Text style={{ color: "gray", fontSize: 13, marginBottom: 4 }}>New Doctor ID *</Text>
-              <TextInput
-                value={reassignDoctorId}
-                onChangeText={setReassignDoctorId}
-                placeholder="D-002"
-                autoCapitalize="none"
-                style={{ borderWidth: 1, borderColor: "#D9EAD3", borderRadius: 10, padding: 12, marginBottom: 12 }}
+              <DoctorPicker
+                doctors={doctors.filter((d) => d.userId !== reassignPatient_?.assignedDoctorId)}
+                selected={selectedReassignDoctor}
+                onSelect={setSelectedReassignDoctor}
+                label="New Doctor *"
               />
 
               {reassignError ? <Text style={{ color: "red", fontSize: 13, marginBottom: 8 }}>{reassignError}</Text> : null}
@@ -258,7 +351,7 @@ export default function AdminPage() {
                 <Text style={{ color: "white", fontWeight: "600" }}>{reassigning ? "Reassigning..." : "Confirm Reassign"}</Text>
               </TouchableOpacity>
 
-              <TouchableOpacity onPress={() => { setReassignPatient(null); setReassignError(""); }} style={{ alignItems: "center", padding: 12 }}>
+              <TouchableOpacity onPress={() => { setReassignPatient(null); setReassignError(""); setSelectedReassignDoctor(null); }} style={{ alignItems: "center", padding: 12 }}>
                 <Text style={{ color: "gray" }}>Cancel</Text>
               </TouchableOpacity>
             </View>
