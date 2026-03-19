@@ -13,11 +13,12 @@ See the License for the specific language governing permissions and limitations 
 const express = require('express')
 const bodyParser = require('body-parser')
 const awsServerlessExpressMiddleware = require('aws-serverless-express/middleware')
-const { DynamoDBClient, PutItemCommand, GetItemCommand } = require('@aws-sdk/client-dynamodb')
+const { DynamoDBClient, PutItemCommand, GetItemCommand, QueryCommand, TransactWriteItemsCommand } = require('@aws-sdk/client-dynamodb')
 const { CognitoIdentityProviderClient, AdminAddUserToGroupCommand } = require('@aws-sdk/client-cognito-identity-provider')
 
 const REGION = process.env.REGION || 'us-east-2'
 const TABLE_NAME = process.env.DYNAMODB_TABLE || 'Users-dev'
+const HEALTH_TABLE = process.env.HEALTH_TABLE || 'Medtronic_Health'
 const USER_POOL_ID = process.env.AUTH_USERPOOLID || 'us-east-2_XKq4cKesI'
 
 const dynamo = new DynamoDBClient({ region: REGION })
@@ -141,6 +142,218 @@ app.delete('/users', function(req, res) {
 app.delete('/me/*', function(req, res) {
   // Add your code here
   res.json({success: 'delete call succeed!', url: req.url});
+});
+
+// ─── PATIENT ENDPOINTS ────────────────────────────────────────────────────────
+
+// POST /patients — admin creates a new patient and assigns to a doctor
+app.post('/patients', async function(req, res) {
+  const { fullName, age, doctorId, createdByAdminId } = req.body || {};
+  if (!fullName || !doctorId) {
+    return res.status(400).json({ error: 'fullName and doctorId are required' });
+  }
+
+  const patientId = 'P-' + Date.now();
+  const now = new Date().toISOString();
+
+  try {
+    // Write 3 records atomically:
+    // 1. Patient PROFILE
+    // 2. PatientDoctorLink  (PATIENT → DOCTOR)
+    // 3. DoctorPatientLink  (DOCTOR  → PATIENT)
+    await dynamo.send(new TransactWriteItemsCommand({
+      TransactItems: [
+        {
+          Put: {
+            TableName: HEALTH_TABLE,
+            Item: {
+              PK:              { S: `PATIENT#${patientId}` },
+              SK:              { S: 'PROFILE' },
+              type:            { S: 'PatientProfile' },
+              patientId:       { S: patientId },
+              fullName:        { S: fullName },
+              age:             { N: String(age || 0) },
+              assignedDoctorId:{ S: doctorId },
+              createdByAdminId:{ S: createdByAdminId || '' },
+              status:          { S: 'active' },
+              GSI1PK:          { S: 'ALL_PATIENTS' },
+              createdAt:       { S: now },
+            },
+          },
+        },
+        {
+          Put: {
+            TableName: HEALTH_TABLE,
+            Item: {
+              PK:       { S: `PATIENT#${patientId}` },
+              SK:       { S: `DOCTOR#${doctorId}` },
+              type:     { S: 'PatientDoctorLink' },
+              linkedAt: { S: now },
+            },
+          },
+        },
+        {
+          Put: {
+            TableName: HEALTH_TABLE,
+            Item: {
+              PK:       { S: `DOCTOR#${doctorId}` },
+              SK:       { S: `PATIENT#${patientId}` },
+              type:     { S: 'DoctorPatientLink' },
+              fullName: { S: fullName },
+              linkedAt: { S: now },
+            },
+          },
+        },
+      ],
+    }));
+
+    res.status(201).json({ success: true, patientId });
+  } catch (err) {
+    console.error('Create patient error:', err);
+    res.status(500).json({ error: 'Failed to create patient' });
+  }
+});
+
+// GET /patients — admin: all patients via GSI | doctor: their patients via doctorId
+app.get('/patients', async function(req, res) {
+  const { doctorId } = req.query;
+
+  try {
+    if (doctorId) {
+      // Doctor view: query DOCTOR#doctorId → PATIENT# links
+      const result = await dynamo.send(new QueryCommand({
+        TableName: HEALTH_TABLE,
+        KeyConditionExpression: 'PK = :pk AND begins_with(SK, :sk)',
+        ExpressionAttributeValues: {
+          ':pk': { S: `DOCTOR#${doctorId}` },
+          ':sk': { S: 'PATIENT#' },
+        },
+      }));
+      const patients = (result.Items || []).map(i => ({
+        patientId: i.SK?.S?.replace('PATIENT#', ''),
+        fullName:  i.fullName?.S,
+        linkedAt:  i.linkedAt?.S,
+      }));
+      return res.json({ patients });
+    }
+
+    // Admin view: all patients via GSI1PK = "ALL_PATIENTS"
+    const result = await dynamo.send(new QueryCommand({
+      TableName: HEALTH_TABLE,
+      IndexName: 'GSI1PK-index',
+      KeyConditionExpression: 'GSI1PK = :gsi',
+      ExpressionAttributeValues: { ':gsi': { S: 'ALL_PATIENTS' } },
+    }));
+    const patients = (result.Items || []).map(i => ({
+      patientId:        i.patientId?.S,
+      fullName:         i.fullName?.S,
+      age:              i.age?.N,
+      assignedDoctorId: i.assignedDoctorId?.S,
+      status:           i.status?.S,
+      createdAt:        i.createdAt?.S,
+    }));
+    res.json({ patients });
+  } catch (err) {
+    console.error('Get patients error:', err);
+    res.status(500).json({ error: 'Failed to fetch patients' });
+  }
+});
+
+// GET /patients/:patientId — get a single patient profile
+app.get('/patients/:patientId', async function(req, res) {
+  const { patientId } = req.params;
+  try {
+    const result = await dynamo.send(new GetItemCommand({
+      TableName: HEALTH_TABLE,
+      Key: { PK: { S: `PATIENT#${patientId}` }, SK: { S: 'PROFILE' } },
+    }));
+    if (!result.Item) return res.status(404).json({ error: 'Patient not found' });
+    const i = result.Item;
+    res.json({
+      patientId:        i.patientId?.S,
+      fullName:         i.fullName?.S,
+      age:              i.age?.N,
+      assignedDoctorId: i.assignedDoctorId?.S,
+      status:           i.status?.S,
+      createdAt:        i.createdAt?.S,
+    });
+  } catch (err) {
+    console.error('Get patient error:', err);
+    res.status(500).json({ error: 'Failed to fetch patient' });
+  }
+});
+
+// PUT /patients/:patientId — admin reassigns patient to a different doctor
+app.put('/patients/:patientId', async function(req, res) {
+  const { patientId } = req.params;
+  const { newDoctorId } = req.body || {};
+  if (!newDoctorId) return res.status(400).json({ error: 'newDoctorId is required' });
+
+  const now = new Date().toISOString();
+
+  try {
+    // Get current patient profile to find old doctorId
+    const profileResult = await dynamo.send(new GetItemCommand({
+      TableName: HEALTH_TABLE,
+      Key: { PK: { S: `PATIENT#${patientId}` }, SK: { S: 'PROFILE' } },
+    }));
+    if (!profileResult.Item) return res.status(404).json({ error: 'Patient not found' });
+    const oldDoctorId = profileResult.Item.assignedDoctorId?.S;
+
+    // Get patient fullName for the new DoctorPatientLink record
+    const fullName = profileResult.Item.fullName?.S || '';
+
+    await dynamo.send(new TransactWriteItemsCommand({
+      TransactItems: [
+        // Update patient PROFILE with new doctor
+        {
+          Put: {
+            TableName: HEALTH_TABLE,
+            Item: {
+              ...profileResult.Item,
+              assignedDoctorId: { S: newDoctorId },
+              updatedAt:        { S: now },
+            },
+          },
+        },
+        // New PatientDoctorLink
+        {
+          Put: {
+            TableName: HEALTH_TABLE,
+            Item: {
+              PK: { S: `PATIENT#${patientId}` }, SK: { S: `DOCTOR#${newDoctorId}` },
+              type: { S: 'PatientDoctorLink' }, linkedAt: { S: now },
+            },
+          },
+        },
+        // New DoctorPatientLink
+        {
+          Put: {
+            TableName: HEALTH_TABLE,
+            Item: {
+              PK: { S: `DOCTOR#${newDoctorId}` }, SK: { S: `PATIENT#${patientId}` },
+              type: { S: 'DoctorPatientLink' }, fullName: { S: fullName }, linkedAt: { S: now },
+            },
+          },
+        },
+        // Remove old DoctorPatientLink
+        {
+          Delete: {
+            TableName: HEALTH_TABLE,
+            Key: {
+              PK: { S: `DOCTOR#${oldDoctorId}` },
+              SK: { S: `PATIENT#${patientId}` },
+            },
+          },
+        },
+      ],
+    }));
+
+    res.json({ success: true, patientId, newDoctorId });
+  } catch (err) {
+    console.error('Reassign patient error:', err);
+    res.status(500).json({ error: 'Failed to reassign patient' });
+  }
 });
 
 app.listen(3000, function() {

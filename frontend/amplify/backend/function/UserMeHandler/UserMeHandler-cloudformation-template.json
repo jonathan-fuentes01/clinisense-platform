@@ -184,6 +184,21 @@
             },
             {
               "Action": [
+                "dynamodb:PutItem",
+                "dynamodb:GetItem",
+                "dynamodb:UpdateItem",
+                "dynamodb:DeleteItem",
+                "dynamodb:Query",
+                "dynamodb:TransactWriteItems"
+              ],
+              "Resource": [
+                "arn:aws:dynamodb:us-east-2:*:table/Medtronic_Health",
+                "arn:aws:dynamodb:us-east-2:*:table/Medtronic_Health/index/*"
+              ],
+              "Effect": "Allow"
+            },
+            {
+              "Action": [
                 "cognito-idp:AdminAddUserToGroup"
               ],
               "Resource": [
