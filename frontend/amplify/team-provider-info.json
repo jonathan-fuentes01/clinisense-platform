@@ -9,15 +9,11 @@
       "UnauthRoleName": "amplify-medtronic-dev-d1cf5-unauthRole",
       "StackName": "amplify-medtronic-dev-d1cf5",
       "StackId": "arn:aws:cloudformation:us-east-2:217340893921:stack/amplify-medtronic-dev-d1cf5/419c07e0-18e8-11f1-845a-0673ca97c387",
-      "AmplifyAppId": "dyy7cxzpankg5",
-      "APIGatewayAuthURL": "https://s3.amazonaws.com/amplify-medtronic-dev-d1cf5-deployment/amplify-cfn-templates/api/APIGatewayAuthStack.json"
+      "AmplifyAppId": "dyy7cxzpankg5"
     },
     "categories": {
       "auth": {
         "medtronic0d9d813a": {}
-      },
-      "storage": {
-        "userTable": {}
       },
       "function": {
         "UserMeHandler": {

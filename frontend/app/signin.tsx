@@ -50,7 +50,7 @@ export default function SignIn() {
     console.log("[routeByRole] isAdmin:", isAdmin, "→ navigating to:", isAdmin ? "/admin" : "/doctor");
 
     if (isAdmin) router.replace("/admin");
-    else router.replace("/doctor");
+    else router.replace("/doctor/profile");
   };
 
   const handleSignIn = async () => {
@@ -80,7 +80,7 @@ export default function SignIn() {
     } finally {
       setLoading(false);
     }
-  };
+  }; 
 
   return (
     <KeyboardAvoidingView
