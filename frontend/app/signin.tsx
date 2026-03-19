@@ -43,7 +43,7 @@ export default function SignIn() {
       .includes("admin");
 
     if (isAdmin) router.replace("/admin");
-    else router.replace("/doctor");
+    else router.replace("/doctor/profile");
   };
 
   const handleSignIn = async () => {
@@ -73,7 +73,7 @@ export default function SignIn() {
     } finally {
       setLoading(false);
     }
-  };
+  }; 
 
   return (
     <KeyboardAvoidingView

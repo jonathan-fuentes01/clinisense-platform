@@ -1,9 +1,9 @@
 import React from "react";
-import { View, Text, Image, TouchableOpacity } from "react-native";
+import { View, Text, TouchableOpacity } from "react-native";
 import { router } from "expo-router";
 import { signOut } from "aws-amplify/auth";
 
-export default function DoctorPage() {
+export default function ProfileScreen() {
   const Green = "green";
 
   const handleLogout = async () => {
@@ -21,15 +21,6 @@ export default function DoctorPage() {
         paddingHorizontal: 24,
       }}
     >
-      <Image
-        source={require("../assets/images/flask.png")}
-        style={{
-          width: 120,
-          height: 120,
-          resizeMode: "contain",
-          marginBottom: 8,
-        }}
-      />
 
       <Text style={{ fontSize: 26, fontWeight: "bold", color: Green }}>
         CSULB BMES
