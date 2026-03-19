@@ -52,7 +52,7 @@ export default function Onboarding() {
                 </Text>
 
                 <TouchableOpacity
-                    onPress={() => router.push("/doctor/profile")}
+                    onPress={() => router.push("/signin")}
                     style={{
                         width: "100%",
                         backgroundColor: "green",
