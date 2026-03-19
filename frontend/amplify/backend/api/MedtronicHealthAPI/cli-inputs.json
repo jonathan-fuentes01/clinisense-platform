@@ -1,0 +1,26 @@
+{
+  "version": 1,
+  "paths": {
+    "/users": {
+      "name": "/users",
+      "lambdaFunction": "UserMeHandler",
+      "permissions": {
+        "setting": "open"
+      }
+    },
+    "/patients": {
+      "name": "/patients",
+      "lambdaFunction": "UserMeHandler",
+      "permissions": {
+        "setting": "open"
+      }
+    },
+    "/doctors": {
+      "name": "/doctors",
+      "lambdaFunction": "UserMeHandler",
+      "permissions": {
+        "setting": "open"
+      }
+    }
+  }
+}
