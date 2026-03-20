@@ -13,9 +13,10 @@ import {
 
 import { confirmSignUp, resendSignUpCode } from "aws-amplify/auth";
 import { router, useLocalSearchParams } from "expo-router";
+import { saveUserProfile } from "../src/api";
 
 export default function Confirm() {
-  const params = useLocalSearchParams<{ email?: string }>();
+  const params = useLocalSearchParams<{ email?: string; fullName?: string; role?: string }>();
 
   const [email, setEmail] = useState<string>((params.email ?? "").toString());
   const [code, setCode] = useState<string>("");
@@ -42,6 +43,17 @@ export default function Confirm() {
         username: email,
         confirmationCode: code.trim(),
       });
+
+      // Save user profile to DynamoDB after successful confirmation
+      try {
+        await saveUserProfile({
+          fullName: (params.fullName ?? "").toString(),
+          username: email,
+          role: (params.role ?? "doctor") as "admin" | "doctor",
+        });
+      } catch (profileError) {
+        console.warn("Profile save failed:", profileError);
+      }
 
       Alert.alert("Success", "Account confirmed! Please login.");
       router.replace({ pathname: "/signin", params: { email } });

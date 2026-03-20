@@ -7,6 +7,20 @@
       "permissions": {
         "setting": "open"
       }
+    },
+    "/patients": {
+      "name": "/patients",
+      "lambdaFunction": "UserMeHandler",
+      "permissions": {
+        "setting": "open"
+      }
+    },
+    "/doctors": {
+      "name": "/doctors",
+      "lambdaFunction": "UserMeHandler",
+      "permissions": {
+        "setting": "open"
+      }
     }
   }
 }

@@ -18,11 +18,11 @@
       "function": {
         "UserMeHandler": {
           "deploymentBucketName": "amplify-medtronic-dev-d1cf5-deployment",
-          "s3Key": "amplify-builds/UserMeHandler-4b30723174316c735138-build.zip"
+          "s3Key": "amplify-builds/UserMeHandler-757944365431676c4937-build.zip"
         }
       },
-      "storage": {
-        "userTable": {}
+      "api": {
+        "MedtronicHealthAPI": {}
       }
     }
   }
