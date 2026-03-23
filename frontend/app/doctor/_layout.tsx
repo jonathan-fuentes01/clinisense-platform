@@ -1,6 +1,7 @@
 import { Tabs } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
+import Feather from '@expo/vector-icons/Feather';
 
 export default function DoctorLayout() {
   return (
@@ -19,7 +20,7 @@ export default function DoctorLayout() {
       options={{ 
         title: "Alerts",
         tabBarIcon: ({ color, size }) => (
-            <Ionicons name="alert"  size={size} color={color}/>
+            <Feather name="alert-circle" size={size} color={color} />
         )
        }} 
        />
