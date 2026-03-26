@@ -1,12 +1,37 @@
-import React from "react";
-import { View, Text, TouchableOpacity } from "react-native";
+import React, { useEffect, useState } from "react";
+import { View, Text, TouchableOpacity, ActivityIndicator } from "react-native";
 import { router } from "expo-router";
-import { signOut } from "aws-amplify/auth";
+import { signOut, fetchUserAttributes } from "aws-amplify/auth";
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import { fetchUserProfile } from "../../src/api";
+
+type UserProfile = {
+  fullName: string;
+  email: string;
+  role: string;
+};
 
 export default function ProfileScreen() {
   const Green = "green";
+  const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function loadProfile() {
+      try {
+        const attrs = await fetchUserAttributes();
+        const email = attrs.email ?? "";
+        const data = await fetchUserProfile(email) as UserProfile;
+        setProfile(data);
+      } catch (e) {
+        console.error("[ProfileScreen] failed to load profile:", e);
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadProfile();
+  }, []);
 
   const handleLogout = async () => {
     await signOut();
@@ -17,25 +42,21 @@ export default function ProfileScreen() {
     backgroundColor: "white",
     padding: 16,
     borderRadius: 16,
-
-    // ios
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.08,
     shadowRadius: 6,
-
-    // android
     elevation: 2,
-  }
+  };
 
-  function InfoRow({ label, value, isLast }: { label: string; value: string; isLast?: boolean;}) {
+  function InfoRow({ label, value, isLast }: { label: string; value: string; isLast?: boolean }) {
     return (
       <View style={{
         flexDirection: "row",
         justifyContent: "space-between",
         marginBottom: 12,
         paddingBottom: 12,
-        borderBottomWidth: isLast? 0 : 1,
+        borderBottomWidth: isLast ? 0 : 1,
         borderBottomColor: "#f0f0f0",
       }}>
         <Text style={{ color: "#666" }}>{label}</Text>
@@ -45,62 +66,43 @@ export default function ProfileScreen() {
   }
 
   return (
-    <View
-      style={{
-        flex: 1,
-        backgroundColor: "#f2f2f2",
-        paddingHorizontal: 24,
-      }}
-    >
-      <Text style={{
-        marginTop: 15,
-        fontWeight: "600",
-        fontSize: 24,
-      }}>Profile</Text>
-      <Text style={{
-        color: "#666",
-        marginTop: 4,
-        marginBottom: 5,
-      }}>Account Information</Text>
+    <View style={{ flex: 1, backgroundColor: "#f2f2f2", paddingHorizontal: 24 }}>
+      <Text style={{ marginTop: 15, fontWeight: "600", fontSize: 24 }}>Profile</Text>
+      <Text style={{ color: "#666", marginTop: 4, marginBottom: 5 }}>Account Information</Text>
 
-      {/* identity card */}
-      <View style={[
-        cardStyle, { alignItems: "center", marginTop: 20}
-      ]}>
-        <View style={{
-          width: 64,
-          height: 64,
-          borderRadius: 32,
-          backgroundColor: "#e0e0e0",
-          justifyContent: "center",
-          alignItems: "center",
-        }}>
-          <FontAwesome6 name="user-doctor" size={32} color="#555" />
-        </View>
-        <Text style={{
-          fontSize: 18,
-          fontWeight: "600",
-          marginTop: 5,
-        }}>
-          Sarah Williams
-        </Text>
-        <Text style={{
-          color: "#666",
-          marginTop: 4,
-        }}>
-          Clinician
-        </Text>
-      </View>
+      {loading ? (
+        <ActivityIndicator style={{ marginTop: 40 }} size="large" color={Green} />
+      ) : (
+        <>
+          {/* identity card */}
+          <View style={[cardStyle, { alignItems: "center", marginTop: 20 }]}>
+            <View style={{
+              width: 64,
+              height: 64,
+              borderRadius: 32,
+              backgroundColor: "#e0e0e0",
+              justifyContent: "center",
+              alignItems: "center",
+            }}>
+              <FontAwesome6 name="user-doctor" size={32} color="#555" />
+            </View>
+            <Text style={{ fontSize: 18, fontWeight: "600", marginTop: 5 }}>
+              {profile?.fullName ?? "—"}
+            </Text>
+            <Text style={{ color: "#666", marginTop: 4, textTransform: "capitalize" }}>
+              {profile?.role ?? "—"}
+            </Text>
+          </View>
 
-      {/* account details */}
-      <View style={[
-        cardStyle, { marginTop: 20 }
-      ]}>
-        <Text style={{ fontSize: 17, fontWeight: "600", marginBottom: 10 }}>Account Details</Text>
-        <InfoRow label="Full Name" value="Sarah Williams" />
-        <InfoRow label="Email" value="sarah@email.com" />
-        <InfoRow label="Employee ID" value="123456" isLast />
-      </View>
+          {/* account details */}
+          <View style={[cardStyle, { marginTop: 20 }]}>
+            <Text style={{ fontSize: 17, fontWeight: "600", marginBottom: 10 }}>Account Details</Text>
+            <InfoRow label="Full Name" value={profile?.fullName ?? "—"} />
+            <InfoRow label="Email" value={profile?.email ?? "—"} />
+            <InfoRow label="Role" value={profile?.role ?? "—"} isLast />
+          </View>
+        </>
+      )}
 
       <TouchableOpacity
         onPress={handleLogout}
@@ -113,9 +115,9 @@ export default function ProfileScreen() {
           alignItems: "center",
         }}
       >
-        <View style={{ flexDirection: "row", alignItems: "center"}}>
-          <Text style={{ color: "white", fontSize: 16, fontWeight: "600", marginRight: 6, }}>
-            Logout  
+        <View style={{ flexDirection: "row", alignItems: "center" }}>
+          <Text style={{ color: "white", fontSize: 16, fontWeight: "600", marginRight: 6 }}>
+            Logout
           </Text>
           <MaterialCommunityIcons name="logout" size={24} color="white" />
         </View>

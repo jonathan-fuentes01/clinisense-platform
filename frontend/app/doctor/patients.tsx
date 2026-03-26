@@ -87,7 +87,7 @@ export default function PatientsScreen() {
                         patient={item}
                         onPress={() =>
                             router.push({
-                                pathname: "/doctor/patients",
+                                pathname: "/doctor/patient",
                                 params: { patientId: item.patientId, fullName: item.fullName },
                             })
                         }
