@@ -37,7 +37,7 @@ void setupBLE(){
     NimBLEService* pService = pServer->createService(SERVICE_UUID);
     
     // create set your characteristic
-    NimBLECharacteristic* pCharacteristic = pService->createCharacteristic(
+    pCharacteristic = pService->createCharacteristic(
         CHARACTERISTIC_UUID,
         NIMBLE_PROPERTY::READ | NIMBLE_PROPERTY::NOTIFY // read and notify (notify is updating unsolicited when data changes)
     );
