@@ -7,7 +7,9 @@
 void uartTask(void *pvParameters){
     while (true){
         if (Serial1.available()){
-            String raw = Serial1.readStringUntil('\n');
+            
+            char raw[UART_MSG_SIZE];
+            Serial1.readBytesUntil('\n', raw, UART_MSG_SIZE); 
 
             xQueueSend(phQueue, &raw, portMAX_DELAY);
         }
