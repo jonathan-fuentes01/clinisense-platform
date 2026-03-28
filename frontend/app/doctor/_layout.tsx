@@ -4,11 +4,11 @@ import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import Feather from '@expo/vector-icons/Feather';
 
 export default function DoctorLayout() {
-  return (
+    return (
     <Tabs>
-      <Tabs.Screen 
-      name="patients" 
-      options={{ 
+        <Tabs.Screen 
+        name="patients" 
+        options={{ 
         title: "Patients",
         tabBarIcon: ({ color, size }) => (
             <Ionicons name="people" size={size} color={color}/>

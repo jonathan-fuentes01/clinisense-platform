@@ -8,7 +8,7 @@ type Status = "unacknowledged" | "acknowledged";
 
 export default function AlertsPage() {
     return (
-        <ScrollView style={{
+        <ScrollView style={{ 
             flex: 1,
             paddingHorizontal: 24,
             backgroundColor: "#f2f2f2",
