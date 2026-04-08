@@ -23,5 +23,9 @@ void processingTask(void *pvParameters){
 }
 
 float voltageConversion(float voltage){
-    return voltage;
+    if (voltage > 3.3 || voltage < 0){
+        return -1; // Invalid voltage
+    }
+
+    return (0.207 * voltage) + 6.8;
 }
