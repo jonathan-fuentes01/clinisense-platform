@@ -1,0 +1,122 @@
+%PDF-1.4
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Count 1 /Kids [3 0 R] >>
+endobj
+3 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 4 0 R /F2 5 0 R >> >> /Contents 6 0 R >>
+endobj
+4 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+5 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold >>
+endobj
+6 0 obj
+<< /Length 6956 >>
+stream
+1 1 1 rg 0 0 612 792 re f
+0.11 0.45 0.23 rg 36 730 540 38 re f
+BT /F2 20 Tf 1 1 1 rg 1 0 0 1 50 745 Tm (Mobile Healthcare Application) Tj ET
+BT /F1 9 Tf 0.35 0.40 0.37 rg 1 0 0 1 50 720 Tm (One-page repo summary generated from local project evidence on 2026-03-25.) Tj ET
+1 w 0.78 0.86 0.80 RG 36 708 m 576 708 l S
+0.91 0.96 0.92 rg 36 664 256 22 re f
+0.8 w 0.78 0.86 0.80 RG 36 664 256 22 re S
+BT /F2 12 Tf 0.11 0.45 0.23 rg 1 0 0 1 50 671 Tm (What It Is) Tj ET
+BT /F1 9 Tf 0.12 0.16 0.14 rg 1 0 0 1 50 652 Tm (An Expo/React Native mobile app for a) Tj ET
+BT /F1 9 Tf 0.12 0.16 0.14 rg 1 0 0 1 50 640 Tm (healthcare monitoring workflow tied to AWS) Tj ET
+BT /F1 9 Tf 0.12 0.16 0.14 rg 1 0 0 1 50 628 Tm (Amplify services and ESP32 firmware.) Tj ET
+BT /F1 9 Tf 0.12 0.16 0.14 rg 1 0 0 1 50 612 Tm (The implemented app supports auth,) Tj ET
+BT /F1 9 Tf 0.12 0.16 0.14 rg 1 0 0 1 50 600 Tm (role-based admin/doctor views, patient) Tj ET
+BT /F1 9 Tf 0.12 0.16 0.14 rg 1 0 0 1 50 588 Tm (assignment, and a placeholder for incoming) Tj ET
+BT /F1 9 Tf 0.12 0.16 0.14 rg 1 0 0 1 50 576 Tm (pH or vitals data.) Tj ET
+0.8 w 0.78 0.86 0.80 RG 36 552 256 134 re S
+0.91 0.96 0.92 rg 36 516 256 22 re f
+0.8 w 0.78 0.86 0.80 RG 36 516 256 22 re S
+BT /F2 12 Tf 0.11 0.45 0.23 rg 1 0 0 1 50 523 Tm (Who It's For) Tj ET
+BT /F1 9 Tf 0.12 0.16 0.14 rg 1 0 0 1 50 504 Tm (Primary users are doctors and admins.) Tj ET
+BT /F1 9 Tf 0.12 0.16 0.14 rg 1 0 0 1 50 492 Tm (Doctors review assigned patients; admins) Tj ET
+BT /F1 9 Tf 0.12 0.16 0.14 rg 1 0 0 1 50 480 Tm (create patients and reassign them to) Tj ET
+BT /F1 9 Tf 0.12 0.16 0.14 rg 1 0 0 1 50 468 Tm (doctors.) Tj ET
+0.8 w 0.78 0.86 0.80 RG 36 444 256 94 re S
+0.91 0.96 0.92 rg 36 408 256 22 re f
+0.8 w 0.78 0.86 0.80 RG 36 408 256 22 re S
+BT /F2 12 Tf 0.11 0.45 0.23 rg 1 0 0 1 50 415 Tm (How To Run) Tj ET
+BT /F1 9 Tf 0.12 0.16 0.14 rg 1 0 0 1 50 396 Tm (- From the repo root, go to `frontend`.) Tj ET
+BT /F1 9 Tf 0.12 0.16 0.14 rg 1 0 0 1 50 382 Tm (- Run `npm install`.) Tj ET
+BT /F1 9 Tf 0.12 0.16 0.14 rg 1 0 0 1 50 368 Tm (- Run `npx expo start` or `npm start`.) Tj ET
+BT /F1 9 Tf 0.12 0.16 0.14 rg 1 0 0 1 50 354 Tm (- Open the app in Expo Go, an emulator,) Tj ET
+BT /F1 9 Tf 0.12 0.16 0.14 rg 1 0 0 1 50 342 Tm (  simulator, or web.) Tj ET
+BT /F1 9 Tf 0.12 0.16 0.14 rg 1 0 0 1 50 328 Tm (- Backend deployment steps: Not found in) Tj ET
+BT /F1 9 Tf 0.12 0.16 0.14 rg 1 0 0 1 50 316 Tm (  repo.) Tj ET
+BT /F1 9 Tf 0.12 0.16 0.14 rg 1 0 0 1 50 302 Tm (- Firmware flashing steps: Not found in) Tj ET
+BT /F1 9 Tf 0.12 0.16 0.14 rg 1 0 0 1 50 290 Tm (  repo.) Tj ET
+0.8 w 0.78 0.86 0.80 RG 36 268 256 162 re S
+0.91 0.96 0.92 rg 320 664 256 22 re f
+0.8 w 0.78 0.86 0.80 RG 320 664 256 22 re S
+BT /F2 12 Tf 0.11 0.45 0.23 rg 1 0 0 1 334 671 Tm (What It Does) Tj ET
+BT /F1 9 Tf 0.12 0.16 0.14 rg 1 0 0 1 334 652 Tm (- Lets users sign up, confirm email, and) Tj ET
+BT /F1 9 Tf 0.12 0.16 0.14 rg 1 0 0 1 334 640 Tm (  sign in with AWS Cognito via Amplify) Tj ET
+BT /F1 9 Tf 0.12 0.16 0.14 rg 1 0 0 1 334 628 Tm (  Auth.) Tj ET
+BT /F1 9 Tf 0.12 0.16 0.14 rg 1 0 0 1 334 614 Tm (- Routes users by role so admins land on) Tj ET
+BT /F1 9 Tf 0.12 0.16 0.14 rg 1 0 0 1 334 602 Tm (  the dashboard and doctors land in doctor) Tj ET
+BT /F1 9 Tf 0.12 0.16 0.14 rg 1 0 0 1 334 590 Tm (  tabs.) Tj ET
+BT /F1 9 Tf 0.12 0.16 0.14 rg 1 0 0 1 334 576 Tm (- Stores user profiles with name, email,) Tj ET
+BT /F1 9 Tf 0.12 0.16 0.14 rg 1 0 0 1 334 564 Tm (  role, and created date.) Tj ET
+BT /F1 9 Tf 0.12 0.16 0.14 rg 1 0 0 1 334 550 Tm (- Lets admins create patients, assign a) Tj ET
+BT /F1 9 Tf 0.12 0.16 0.14 rg 1 0 0 1 334 538 Tm (  doctor, and list all patients.) Tj ET
+BT /F1 9 Tf 0.12 0.16 0.14 rg 1 0 0 1 334 524 Tm (- Lets admins reassign a patient to a) Tj ET
+BT /F1 9 Tf 0.12 0.16 0.14 rg 1 0 0 1 334 512 Tm (  different doctor.) Tj ET
+BT /F1 9 Tf 0.12 0.16 0.14 rg 1 0 0 1 334 498 Tm (- Lets doctors refresh and view only their) Tj ET
+BT /F1 9 Tf 0.12 0.16 0.14 rg 1 0 0 1 334 486 Tm (  assigned patients.) Tj ET
+BT /F1 9 Tf 0.12 0.16 0.14 rg 1 0 0 1 334 472 Tm (- Shows a patient detail screen reserved) Tj ET
+BT /F1 9 Tf 0.12 0.16 0.14 rg 1 0 0 1 334 460 Tm (  for future pH or vitals readings.) Tj ET
+0.8 w 0.78 0.86 0.80 RG 320 438 256 248 re S
+0.91 0.96 0.92 rg 320 402 256 22 re f
+0.8 w 0.78 0.86 0.80 RG 320 402 256 22 re S
+BT /F2 12 Tf 0.11 0.45 0.23 rg 1 0 0 1 334 409 Tm (How It Works) Tj ET
+BT /F1 9 Tf 0.12 0.16 0.14 rg 1 0 0 1 334 390 Tm (- Frontend: Expo Router screens in) Tj ET
+BT /F1 9 Tf 0.12 0.16 0.14 rg 1 0 0 1 334 378 Tm (  `frontend/app` configure Amplify and call) Tj ET
+BT /F1 9 Tf 0.12 0.16 0.14 rg 1 0 0 1 334 366 Tm (  `MedtronicHealthAPI` through) Tj ET
+BT /F1 9 Tf 0.12 0.16 0.14 rg 1 0 0 1 334 354 Tm (  `frontend/src/api.ts`.) Tj ET
+BT /F1 9 Tf 0.12 0.16 0.14 rg 1 0 0 1 334 340 Tm (- Auth: Amplify uses a Cognito user pool) Tj ET
+BT /F1 9 Tf 0.12 0.16 0.14 rg 1 0 0 1 334 328 Tm (  and identity pool in `us-east-2`; role) Tj ET
+BT /F1 9 Tf 0.12 0.16 0.14 rg 1 0 0 1 334 316 Tm (  checks read Cognito groups from the ID) Tj ET
+BT /F1 9 Tf 0.12 0.16 0.14 rg 1 0 0 1 334 304 Tm (  token.) Tj ET
+BT /F1 9 Tf 0.12 0.16 0.14 rg 1 0 0 1 334 290 Tm (- API: API Gateway routes `/users`,) Tj ET
+BT /F1 9 Tf 0.12 0.16 0.14 rg 1 0 0 1 334 278 Tm (  `/patients`, and `/doctors` to Lambda) Tj ET
+BT /F1 9 Tf 0.12 0.16 0.14 rg 1 0 0 1 334 266 Tm (  `UserMeHandler`.) Tj ET
+BT /F1 9 Tf 0.12 0.16 0.14 rg 1 0 0 1 334 252 Tm (- Backend: `UserMeHandler` runs an Express) Tj ET
+BT /F1 9 Tf 0.12 0.16 0.14 rg 1 0 0 1 334 240 Tm (  app that writes profiles to DynamoDB) Tj ET
+BT /F1 9 Tf 0.12 0.16 0.14 rg 1 0 0 1 334 228 Tm (  table `Users-dev` and patient records) Tj ET
+BT /F1 9 Tf 0.12 0.16 0.14 rg 1 0 0 1 334 216 Tm (  plus links to `Medtronic_Health`.) Tj ET
+BT /F1 9 Tf 0.12 0.16 0.14 rg 1 0 0 1 334 202 Tm (- Data model: patient creation and) Tj ET
+BT /F1 9 Tf 0.12 0.16 0.14 rg 1 0 0 1 334 190 Tm (  reassignment use DynamoDB transactional) Tj ET
+BT /F1 9 Tf 0.12 0.16 0.14 rg 1 0 0 1 334 178 Tm (  writes; doctor and admin views query the) Tj ET
+BT /F1 9 Tf 0.12 0.16 0.14 rg 1 0 0 1 334 166 Tm (  same table differently.) Tj ET
+BT /F1 9 Tf 0.12 0.16 0.14 rg 1 0 0 1 334 152 Tm (- Device side: ESP32 firmware reads UART) Tj ET
+BT /F1 9 Tf 0.12 0.16 0.14 rg 1 0 0 1 334 140 Tm (  data, converts it to a JSON payload with) Tj ET
+BT /F1 9 Tf 0.12 0.16 0.14 rg 1 0 0 1 334 128 Tm (  `Voltage` and `pH Value`, then notifies) Tj ET
+BT /F1 9 Tf 0.12 0.16 0.14 rg 1 0 0 1 334 116 Tm (  over BLE.) Tj ET
+BT /F1 9 Tf 0.12 0.16 0.14 rg 1 0 0 1 334 102 Tm (- Mobile BLE ingestion path from the app to) Tj ET
+BT /F1 9 Tf 0.12 0.16 0.14 rg 1 0 0 1 334 90 Tm (  the firmware: Not found in repo.) Tj ET
+0.8 w 0.78 0.86 0.80 RG 320 68 256 356 re S
+BT /F1 8 Tf 0.35 0.40 0.37 rg 1 0 0 1 36 20 Tm (Evidence sources: root README, frontend app/screens, frontend Amplify config, Lambda source, and ESP32 firmware source.) Tj ET
+endstream
+endobj
+xref
+0 7
+0000000000 65535 f 
+0000000009 00000 n 
+0000000058 00000 n 
+0000000115 00000 n 
+0000000251 00000 n 
+0000000321 00000 n 
+0000000396 00000 n 
+trailer
+<< /Size 7 /Root 1 0 R >>
+startxref
+7404
+%%EOF

@@ -7,6 +7,7 @@
 
 
 // MY LU CODE MODIFY for AOMPLIFY AWS services 3/6/2026
+import "react-native-get-random-values";
 import "../src/amplifyConfig";
 import { Stack } from "expo-router";
 
