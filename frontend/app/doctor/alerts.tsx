@@ -6,36 +6,6 @@ import { getAlerts, acknowledgeAlert } from "../../src/api";
 
 type Severity = "critical" | "warning";
 
-<<<<<<< HEAD
-export default function AlertsPage() {
-    return (
-        <ScrollView style={{ 
-            flex: 1,
-            paddingHorizontal: 24,
-            backgroundColor: "#f2f2f2",
-        }}>
-            <Text style={{ fontWeight: "600", fontSize: 24, marginTop: 15 }}>Alerts</Text>
-            <AlertCard
-                severity="critical"
-                title="pH Below Threshold"
-                description="pH dropped to 6.2 (threshold 6.8)"
-                patientName="Davis, Emily"
-                patientId="123456"
-                timeAgo="2 min ago"
-                status="unacknowledged"
-            />
-            <AlertCard
-                severity="warning"
-                title="pH Approaching Threshold"
-                description="pH trending downward (current: 6.9, threshold: 6.8)"
-                patientName="Nguyen, Alex"
-                patientId="789012"
-                timeAgo="10 min ago"
-                status="acknowledged"
-            />
-        </ScrollView>
-    )
-=======
 type Alert = {
   patientId: string;
   patientName: string;
@@ -47,7 +17,6 @@ type Alert = {
   timeAgo: string;
   readingSK: string;
   acknowledged: boolean;
->>>>>>> e4b4c61be05c1a859caf33f1de76bb0d86a8a58c
 };
 
 export default function AlertsPage() {
