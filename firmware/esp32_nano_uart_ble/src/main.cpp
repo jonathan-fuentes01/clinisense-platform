@@ -11,15 +11,20 @@ NimBLECharacteristic* pCharacteristic = nullptr;
 
 void setup() {
     Serial.begin(BAUD_RATE);
-
+    Serial.println("Boot ok.");
     phQueue = xQueueCreate(UART_ITEMS, UART_MSG_SIZE);
     bleQueue = xQueueCreate(BLE_ITEMS, BLE_MSG_SIZE);
 
     if (bleQueue == NULL){
-        throw std::runtime_error("The BLE queue has not been created.");
+        Serial.println("BLE Queu has not been created.");
+        while(true){
+            delay(1000);
+        }
     }
     if (phQueue == NULL){
-        throw std::runtime_error("The UART queue has not been created.");
+        while(true){
+            delay(1000);
+        }
     }
 
     xTaskCreate(
@@ -50,6 +55,6 @@ void setup() {
     );
 }
 
-void loop(){
+void loop() {
 
 }
