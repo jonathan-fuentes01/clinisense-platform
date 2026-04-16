@@ -65,9 +65,13 @@ void bleTask(void *pvParameters){
 
     while (1){
         if(xQueueReceive(bleQueue, buffer, portMAX_DELAY)){
-            pCharacteristic->setValue(buffer);
-            pCharacteristic->notify();
             
+            // connection flag
+            if(connected){
+                pCharacteristic->setValue(buffer);
+                pCharacteristic->notify();
+                vTaskDelay(pdMS_TO_TICKS(25)); // notify delay
+            }
             Serial.print("Data sent: ");
             Serial.println(buffer);
 
