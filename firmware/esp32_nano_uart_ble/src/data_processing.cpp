@@ -3,15 +3,15 @@
 #include "data_processing.h"
 
 void processingTask(void *pvParameters){
-    float raw;
+    float filteredValue;
     
     while(1){
-        if (xQueueReceive(phQueue, &raw, portMAX_DELAY)){
-            float ph = voltageConversion(raw);
+        if (xQueueReceive(phQueue, &filteredValue, portMAX_DELAY)){
+            float ph = voltageConversion(filteredValue);
 
             JsonDocument doc;
 
-            doc["Voltage"] = raw;
+            doc["Voltage"] = filteredValue;
             doc["pH Value"] = ph;
 
             char buffer[BLE_MSG_SIZE];

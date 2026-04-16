@@ -11,7 +11,7 @@ void uartTask(void *pvParameters){
             char raw[UART_MSG_SIZE];
             Serial1.readBytesUntil('\n', raw, UART_MSG_SIZE);  
             float sample = atof(raw); // read raw UART byte data
-            float filteredValue = IIRFilter(sample);
+            float filteredValue = IIRFilter(sample); // use the IIR Filter
             xQueueSend(phQueue, &filteredValue, portMAX_DELAY);
         }
     }
