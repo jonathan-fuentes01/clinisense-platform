@@ -2,7 +2,7 @@
 #include "queues.h"
 #include "ble.h"
 
-
+volatile bool connected = false;
 class ServerCallbacks : public NimBLEServerCallbacks{
     void onConnect(NimBLEServer* pServer) {
         connected = true;
@@ -12,6 +12,8 @@ class ServerCallbacks : public NimBLEServerCallbacks{
     void onDisconnect(NimBLEServer* pServer){
         connected = false;
         Serial.println("Client disconnected!! Start advertising..");
+
+        vTaskDelay(pdMS_TO_TICKS(25)); // wait a little bit
         NimBLEDevice::startAdvertising();
     }
 } serverCallbacks;
@@ -66,7 +68,7 @@ void bleTask(void *pvParameters){
     while (1){
         if(xQueueReceive(bleQueue, buffer, portMAX_DELAY)){
             
-            // connection flag
+            // 
             if(connected){
                 pCharacteristic->setValue(buffer);
                 pCharacteristic->notify();
