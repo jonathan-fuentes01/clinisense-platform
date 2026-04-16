@@ -67,7 +67,7 @@ export default function ProfileScreen() {
 
   return (
     <View style={{ flex: 1, backgroundColor: "#f2f2f2", paddingHorizontal: 24 }}>
-      <Text style={{ marginTop: 15, fontWeight: "600", fontSize: 24 }}>Profile</Text>
+      <Text style={{ marginTop: 15, fontWeight: "bold", fontSize: 24 }}>Profile</Text>
       <Text style={{ color: "#666", marginTop: 4, marginBottom: 5 }}>Account Information</Text>
 
       {loading ? (
