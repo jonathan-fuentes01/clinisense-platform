@@ -13,8 +13,17 @@ provider:
 functions:
   app:
     handler: index.handler
-    events: 
+    events:
       - httpApi: '*'
+
+  mlPredict:
+    image: 217340893921.dkr.ecr.us-east-2.amazonaws.com/bmes-ml:latest
+    events:
+      - httpApi:
+          path: /predict
+          method: post
+    memorySize: 1024
+    timeout: 30
 
 # https://www.serverless.com/plugins/serverless-better-credentials
 

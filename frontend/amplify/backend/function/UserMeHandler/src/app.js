@@ -13,7 +13,7 @@ See the License for the specific language governing permissions and limitations 
 const express = require('express')
 const bodyParser = require('body-parser')
 const awsServerlessExpressMiddleware = require('aws-serverless-express/middleware')
-const { DynamoDBClient, PutItemCommand, GetItemCommand, QueryCommand, TransactWriteItemsCommand, ScanCommand } = require('@aws-sdk/client-dynamodb')
+const { DynamoDBClient, PutItemCommand, GetItemCommand, QueryCommand, TransactWriteItemsCommand, ScanCommand, UpdateItemCommand } = require('@aws-sdk/client-dynamodb')
 const { CognitoIdentityProviderClient, AdminAddUserToGroupCommand } = require('@aws-sdk/client-cognito-identity-provider')
 
 const REGION = process.env.REGION || 'us-east-2'
@@ -376,6 +376,219 @@ app.put('/patients/:patientId', async function(req, res) {
   } catch (err) {
     console.error('Reassign patient error:', err);
     res.status(500).json({ error: 'Failed to reassign patient' });
+  }
+});
+
+// ─── PUSH TOKEN ───────────────────────────────────────────────────────────────
+
+// PUT /users/push-token — persist Expo push token for a doctor
+app.put('/users/push-token', async function(req, res) {
+  const { email, pushToken } = req.body || {};
+  if (!email || !pushToken) return res.status(400).json({ error: 'email and pushToken required' });
+  try {
+    await dynamo.send(new UpdateItemCommand({
+      TableName: TABLE_NAME,
+      Key: { userId: { S: email } },
+      UpdateExpression: 'SET pushToken = :pt',
+      ExpressionAttributeValues: { ':pt': { S: pushToken } },
+    }));
+    res.json({ success: true });
+  } catch (err) {
+    console.error('Save push token error:', err);
+    res.status(500).json({ error: 'Failed to save push token' });
+  }
+});
+
+// ─── READINGS ─────────────────────────────────────────────────────────────────
+
+const PH_CRITICAL_LOW  = 6.5;
+const PH_WARN_LOW      = 6.8;
+const PH_WARN_HIGH     = 7.6;
+const PH_CRITICAL_HIGH = 8.0;
+
+function getSeverity(pH) {
+  if (pH < PH_CRITICAL_LOW || pH > PH_CRITICAL_HIGH) return 'critical';
+  if (pH < PH_WARN_LOW     || pH > PH_WARN_HIGH)     return 'warning';
+  return 'normal';
+}
+
+async function sendExpoPushNotification(pushToken, title, body) {
+  try {
+    await fetch('https://exp.host/--/api/v2/push/send', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+      body: JSON.stringify({ to: pushToken, title, body, sound: 'default', priority: 'high' }),
+    });
+  } catch (err) {
+    console.warn('Expo push error:', err.message);
+  }
+}
+
+// POST /readings — store a sensor reading; generate alert + push if pH out of range
+app.post('/readings', async function(req, res) {
+  const { patientId, pH, voltage, timestamp } = req.body || {};
+  if (!patientId || pH == null) return res.status(400).json({ error: 'patientId and pH required' });
+
+  const now = timestamp || new Date().toISOString();
+  const readingSK = `READING#${now}`;
+  const severity = getSeverity(pH);
+
+  try {
+    // 1. Store the reading
+    await dynamo.send(new PutItemCommand({
+      TableName: HEALTH_TABLE,
+      Item: {
+        PK:        { S: `PATIENT#${patientId}` },
+        SK:        { S: readingSK },
+        type:      { S: 'Reading' },
+        patientId: { S: patientId },
+        pH:        { N: String(pH) },
+        voltage:   { N: String(voltage || 0) },
+        timestamp: { S: now },
+      },
+    }));
+
+    // 2. If out of range, create alert record and push to doctor
+    if (severity !== 'normal') {
+      const profileResult = await dynamo.send(new GetItemCommand({
+        TableName: HEALTH_TABLE,
+        Key: { PK: { S: `PATIENT#${patientId}` }, SK: { S: 'PROFILE' } },
+      }));
+      const profile = profileResult.Item;
+      const doctorEmail = profile?.assignedDoctorId?.S;
+      const patientName = profile?.fullName?.S || patientId;
+
+      if (doctorEmail) {
+        const title = severity === 'critical' ? 'Critical pH Alert' : 'pH Warning';
+        const description = `pH ${parseFloat(pH).toFixed(2)} — ${severity === 'critical' ? 'Immediate attention required' : 'Monitor closely'}`;
+
+        await dynamo.send(new PutItemCommand({
+          TableName: HEALTH_TABLE,
+          Item: {
+            PK:           { S: `ALERT#${doctorEmail}` },
+            SK:           { S: `${patientId}#${readingSK}` },
+            type:         { S: 'Alert' },
+            patientId:    { S: patientId },
+            patientName:  { S: patientName },
+            doctorEmail:  { S: doctorEmail },
+            pH:           { N: String(pH) },
+            severity:     { S: severity },
+            title:        { S: title },
+            description:  { S: description },
+            timestamp:    { S: now },
+            acknowledged: { BOOL: false },
+          },
+        }));
+
+        const doctorResult = await dynamo.send(new GetItemCommand({
+          TableName: TABLE_NAME,
+          Key: { userId: { S: doctorEmail } },
+        }));
+        const pushToken = doctorResult.Item?.pushToken?.S;
+        if (pushToken) {
+          await sendExpoPushNotification(pushToken, title, `Patient ${patientName}: ${description}`);
+        }
+      }
+    }
+
+    res.status(201).json({ success: true, readingSK });
+  } catch (err) {
+    console.error('Post reading error:', err);
+    res.status(500).json({ error: 'Failed to save reading' });
+  }
+});
+
+// GET /patients/:patientId/readings — paginated history, newest first
+app.get('/patients/:patientId/readings', async function(req, res) {
+  const { patientId } = req.params;
+  const limit = Math.min(parseInt(req.query.limit || '20', 10), 100);
+  try {
+    const result = await dynamo.send(new QueryCommand({
+      TableName: HEALTH_TABLE,
+      KeyConditionExpression: 'PK = :pk AND begins_with(SK, :sk)',
+      ExpressionAttributeValues: {
+        ':pk': { S: `PATIENT#${patientId}` },
+        ':sk': { S: 'READING#' },
+      },
+      ScanIndexForward: false,
+      Limit: limit,
+    }));
+    const readings = (result.Items || []).map(i => ({
+      readingSK: i.SK?.S,
+      pH:        parseFloat(i.pH?.N || '0'),
+      voltage:   parseFloat(i.voltage?.N || '0'),
+      timestamp: i.timestamp?.S,
+    }));
+    res.json({ readings });
+  } catch (err) {
+    console.error('Get readings error:', err);
+    res.status(500).json({ error: 'Failed to fetch readings' });
+  }
+});
+
+// ─── ALERTS ───────────────────────────────────────────────────────────────────
+
+function timeAgo(isoString) {
+  const diffMs = Date.now() - new Date(isoString).getTime();
+  const mins = Math.floor(diffMs / 60000);
+  if (mins < 1) return 'just now';
+  if (mins < 60) return `${mins}m ago`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs}h ago`;
+  return `${Math.floor(hrs / 24)}d ago`;
+}
+
+// GET /alerts — all alerts for a doctor, newest first
+app.get('/alerts', async function(req, res) {
+  const { doctorEmail } = req.query;
+  if (!doctorEmail) return res.status(400).json({ error: 'doctorEmail query param required' });
+  try {
+    const result = await dynamo.send(new QueryCommand({
+      TableName: HEALTH_TABLE,
+      KeyConditionExpression: 'PK = :pk',
+      ExpressionAttributeValues: { ':pk': { S: `ALERT#${doctorEmail}` } },
+      ScanIndexForward: false,
+    }));
+    const alerts = (result.Items || []).map(i => ({
+      patientId:    i.patientId?.S,
+      patientName:  i.patientName?.S,
+      pH:           parseFloat(i.pH?.N || '0'),
+      severity:     i.severity?.S,
+      title:        i.title?.S,
+      description:  i.description?.S,
+      timestamp:    i.timestamp?.S,
+      timeAgo:      timeAgo(i.timestamp?.S),
+      // SK is "patientId#READING#timestamp" — strip the patientId# prefix so frontend gets "READING#..."
+      readingSK:    i.SK?.S?.replace(`${i.patientId?.S}#`, ''),
+      acknowledged: i.acknowledged?.BOOL ?? false,
+    }));
+    res.json(alerts);
+  } catch (err) {
+    console.error('Get alerts error:', err);
+    res.status(500).json({ error: 'Failed to fetch alerts' });
+  }
+});
+
+// POST /alerts/acknowledge — mark a specific alert as acknowledged
+app.post('/alerts/acknowledge', async function(req, res) {
+  const { patientId, readingSK, doctorEmail } = req.body || {};
+  if (!patientId || !readingSK || !doctorEmail) {
+    return res.status(400).json({ error: 'patientId, readingSK, and doctorEmail required' });
+  }
+  try {
+    await dynamo.send(new UpdateItemCommand({
+      TableName: HEALTH_TABLE,
+      Key: {
+        PK: { S: `ALERT#${doctorEmail}` },
+        SK: { S: `${patientId}#${readingSK}` },
+      },
+      UpdateExpression: 'SET acknowledged = :val',
+      ExpressionAttributeValues: { ':val': { BOOL: true } },
+    }));
+    res.json({ success: true });
+  } catch (err) {
+    console.error('Acknowledge alert error:', err);
+    res.status(500).json({ error: 'Failed to acknowledge alert' });
   }
 });
 
