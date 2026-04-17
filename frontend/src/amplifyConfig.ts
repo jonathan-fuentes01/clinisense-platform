@@ -1,3 +1,4 @@
+import "@aws-amplify/react-native"; // registers AsyncStorage + NetInfo adapters for RN
 import { Amplify } from "aws-amplify";
 import { Hub } from "aws-amplify/utils";
 import awsconfig from "./aws-exports";

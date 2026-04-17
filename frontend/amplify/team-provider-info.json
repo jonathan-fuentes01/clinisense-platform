@@ -18,7 +18,7 @@
       "function": {
         "UserMeHandler": {
           "deploymentBucketName": "amplify-medtronic-dev-d1cf5-deployment",
-          "s3Key": "amplify-builds/UserMeHandler-757944365431676c4937-build.zip"
+          "s3Key": "amplify-builds/UserMeHandler-316d7276545531524769-build.zip"
         }
       },
       "api": {

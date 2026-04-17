@@ -74,7 +74,7 @@ export default function AlertsPage() {
       style={{ flex: 1, paddingHorizontal: 24, backgroundColor: "#f2f2f2" }}
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
     >
-      <Text style={{ fontWeight: "600", fontSize: 24, marginTop: 15 }}>Alerts</Text>
+      {/* <Text style={{ fontWeight: "600", fontSize: 24, marginTop: 15 }}>Alerts</Text> */}
 
       {loading ? (
         <ActivityIndicator style={{ marginTop: 40 }} size="large" color="green" />
