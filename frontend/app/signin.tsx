@@ -75,8 +75,10 @@ export default function SignIn() {
         await routeByRole();
         return;
       }
-      //console.error("[handleSignIn] error:", e?.name, e?.message);
-      console.error("[handleSignIn] error:", e);
+      console.error("[handleSignIn] name:", e?.name);
+      console.error("[handleSignIn] message:", e?.message);
+      console.error("[handleSignIn] underlyingError:", e?.underlyingError);
+      console.error("[handleSignIn] cause:", e?.cause);
 
       setError(e?.message ?? "Sign in failed");
     } finally {

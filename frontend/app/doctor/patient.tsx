@@ -1,8 +1,9 @@
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { View, Text, ScrollView, ActivityIndicator, RefreshControl, TouchableOpacity, Platform } from "react-native";
 import { useLocalSearchParams } from "expo-router";
-import { getPatient, getPatientReadings, postReading } from "../../src/api";
-import { BleError, BleManager, Characteristic, Device, Subscription } from "react-native-ble-plx";
+import { getPatient, getPatientReadings } from "../../src/api";
+// BLE disabled for Expo Go testing — re-enable when using a development build
+// import { BleError, BleManager, Characteristic, Device, Subscription } from "react-native-ble-plx";
 
 const PH_CRITICAL_LOW  = 6.5;
 const PH_WARN_LOW      = 6.8;
@@ -97,19 +98,6 @@ function PHChart({ readings }: { readings: Reading[] }) {
   );
 }
 
-// ─── BLE constants ────────────────────────────────────────────────────────────
-const ESP32_DEVICE_NAME   = "ESP32-Device";
-const SERVICE_UUID        = "cdbe9e3f-2839-4d61-a1d9-4043e0e0eaeb";
-const CHARACTERISTIC_UUID = "00a81b7a-1fc2-467a-aabc-8bf7a71bbf5c";
-
-// Decode base64 string returned by react-native-ble-plx
-function decodeBase64(b64: string): string {
-  const binary = atob(b64);
-  const bytes = new Uint8Array(binary.length);
-  for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
-  return new TextDecoder().decode(bytes);
-}
-
 type BleStatus = "idle" | "scanning" | "connecting" | "connected" | "error";
 
 const cardStyle = {
@@ -132,121 +120,13 @@ export default function PatientPage() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
-  // ── BLE state ──────────────────────────────────────────────────────────────
-  const bleManager = useRef<BleManager | null>(null);
-  const connectedDevice = useRef<Device | null>(null);
-  const notifSub = useRef<Subscription | null>(null);
-  const [bleStatus, setBleStatus] = useState<BleStatus>("idle");
-  const [bleError, setBleError] = useState<string | null>(null);
-  const [liveReading, setLiveReading] = useState<{ pH: number; voltage: number } | null>(null);
+  // ── BLE state (stubbed for Expo Go — re-enable with development build) ───────
+  const [bleStatus] = useState<BleStatus>("idle");
+  const [bleError] = useState<string | null>(null);
+  const [liveReading] = useState<{ pH: number; voltage: number } | null>(null);
 
-  // Initialise BleManager once (not on web)
-  useEffect(() => {
-    if (Platform.OS === "web") return;
-    bleManager.current = new BleManager();
-    return () => {
-      disconnectBle();
-      bleManager.current?.destroy();
-    };
-  }, []);
-
-  const disconnectBle = useCallback(() => {
-    notifSub.current?.remove();
-    notifSub.current = null;
-    connectedDevice.current?.cancelConnection();
-    connectedDevice.current = null;
-    setBleStatus("idle");
-  }, []);
-
-  const connectBle = useCallback(async () => {
-    if (!bleManager.current || !patientId) return;
-    setBleStatus("scanning");
-    setBleError(null);
-
-    bleManager.current.startDeviceScan(
-      [SERVICE_UUID],
-      { allowDuplicates: false },
-      async (err: BleError | null, device: Device | null) => {
-        if (err) {
-          console.warn("[BLE] scan error:", err.message);
-          setBleStatus("error");
-          setBleError(err.message);
-          return;
-        }
-        if (!device) return;
-
-        const name = device.name ?? device.localName ?? "";
-        if (!name.includes(ESP32_DEVICE_NAME)) return;
-
-        bleManager.current!.stopDeviceScan();
-        setBleStatus("connecting");
-
-        try {
-          const connected = await device.connect();
-          await connected.discoverAllServicesAndCharacteristics();
-          connectedDevice.current = connected;
-          setBleStatus("connected");
-
-          // Subscribe to pH notifications
-          notifSub.current = connected.monitorCharacteristicForService(
-            SERVICE_UUID,
-            CHARACTERISTIC_UUID,
-            async (charErr: BleError | null, characteristic: Characteristic | null) => {
-              if (charErr) {
-                console.warn("[BLE] notification error:", charErr.message);
-                setBleStatus("error");
-                setBleError(charErr.message);
-                return;
-              }
-              if (!characteristic?.value) return;
-
-              try {
-                const json = decodeBase64(characteristic.value);
-                const parsed = JSON.parse(json);
-                const pH      = parseFloat(parsed["pH Value"] ?? parsed["ph"] ?? parsed["pH"]);
-                const voltage = parseFloat(parsed["Voltage"]  ?? parsed["voltage"] ?? "0");
-
-                if (isNaN(pH)) return;
-
-                setLiveReading({ pH, voltage });
-
-                // Upload to AWS
-                await postReading({ patientId, pH, voltage });
-
-                // Add to local list so chart updates immediately
-                const now = new Date().toISOString();
-                const newReading: Reading = { readingSK: `READING#${now}`, pH, timestamp: now };
-                setReadings(prev => [newReading, ...prev].slice(0, 50));
-              } catch (parseErr) {
-                console.warn("[BLE] parse error:", parseErr);
-              }
-            }
-          );
-
-          // Handle unexpected disconnection
-          connected.onDisconnected(() => {
-            setBleStatus("idle");
-            setLiveReading(null);
-            notifSub.current?.remove();
-            notifSub.current = null;
-          });
-        } catch (connectErr: any) {
-          console.warn("[BLE] connect error:", connectErr.message);
-          setBleStatus("error");
-          setBleError(connectErr.message);
-        }
-      }
-    );
-
-    // Stop scanning after 10 s if no device found
-    setTimeout(() => {
-      if (bleStatus === "scanning") {
-        bleManager.current?.stopDeviceScan();
-        setBleStatus("error");
-        setBleError("Device not found. Make sure ESP32 is nearby and advertising.");
-      }
-    }, 10_000);
-  }, [patientId, bleStatus]);
+  const disconnectBle = useCallback(() => {}, []);
+  const connectBle = useCallback(async () => {}, []);
 
   // ─── Data load ─────────────────────────────────────────────────────────────
   const load = async () => {
