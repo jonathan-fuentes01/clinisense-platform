@@ -71,7 +71,7 @@ export default function AlertsPage() {
 
   return (
     <ScrollView
-      style={{ flex: 1, paddingHorizontal: 10, backgroundColor: "#f2f2f2" }}
+      style={{ flex: 1, paddingHorizontal: 24, backgroundColor: "#f2f2f2" }}
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
     >
       <Text style={{ fontWeight: "bold", fontSize: 24, marginTop: 15 }}>Alerts</Text>
