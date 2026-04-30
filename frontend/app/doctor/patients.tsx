@@ -3,6 +3,7 @@ import { View, Text, FlatList, TouchableOpacity, ActivityIndicator, RefreshContr
 import { router } from "expo-router";
 import { fetchAuthSession } from "aws-amplify/auth";
 import { getDoctorPatients } from "../../src/api";
+import Ionicons from "@expo/vector-icons/Ionicons";
 
 type Patient = {
     patientId: string;
@@ -57,30 +58,39 @@ export default function PatientsScreen() {
 
     if (loading) {
         return (
-            <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+            <View style={{ flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: "#f2f2f2" }}>
                 <ActivityIndicator color="green" />
             </View>
         );
     }
 
     if (error) {
-        return <Text style={{ textAlign: "center", marginTop: 40, color: "gray" }}>{error}</Text>;
-    }
-
-    if (patients.length === 0) {
-        return <Text style={{ textAlign: "center", marginTop: 40, color: "gray" }}>No patients assigned yet.</Text>;
+        return (
+            <View style={{ flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: "#f2f2f2" }}>
+                <Text style={{ color: "gray" }}>{error}</Text>
+            </View>
+        );
     }
 
     return (
-        <View style={{ flex: 1, backgroundColor: "#f2f2f2", padding: 16 }}>
-            <Text style={{ fontSize: 24, fontWeight: "bold", marginBottom: 12 }}>
-                Current Patients
-            </Text>
+        <View style={{ flex: 1, backgroundColor: "#f2f2f2" }}>
             <FlatList
                 data={patients}
                 keyExtractor={(item) => item.patientId}
+                contentContainerStyle={{ padding: 16, paddingBottom: 32 }}
                 refreshControl={
                     <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="green" />
+                }
+                ListHeaderComponent={
+                    <Text style={{ fontSize: 13, color: "#888", marginBottom: 12, fontWeight: "500" }}>
+                        {patients.length} {patients.length === 1 ? "patient" : "patients"} assigned
+                    </Text>
+                }
+                ListEmptyComponent={
+                    <View style={{ alignItems: "center", marginTop: 60 }}>
+                        <Ionicons name="people-outline" size={48} color="#ccc" />
+                        <Text style={{ color: "#aaa", marginTop: 12, fontSize: 16 }}>No patients assigned yet</Text>
+                    </View>
                 }
                 renderItem={({ item }) => (
                     <PatientCard
@@ -121,19 +131,10 @@ function PatientCard({ patient, onPress }: { patient: Patient; onPress: () => vo
         >
             <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
                 <Text style={{ fontSize: 18, fontWeight: "600" }}>{formattedName}</Text>
-                <View
-                    style={{
-                        backgroundColor: "#F0F0F0",
-                        paddingHorizontal: 10,
-                        paddingVertical: 4,
-                        borderRadius: 16,
-                    }}
-                >
-                    <Text style={{ color: "#888", fontSize: 13, fontWeight: "600" }}>NO DATA</Text>
-                </View>
+                <Ionicons name="chevron-forward" size={20} color="#ccc" />
             </View>
-            <Text style={{ marginTop: 10, color: "#666" }}>
-                Linked: {new Date(patient.linkedAt).toLocaleDateString()}
+            <Text style={{ marginTop: 8, color: "#999", fontSize: 13 }}>
+                Enrolled {new Date(patient.linkedAt).toLocaleDateString()}
             </Text>
         </TouchableOpacity>
     );

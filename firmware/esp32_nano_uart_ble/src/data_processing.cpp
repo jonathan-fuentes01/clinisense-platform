@@ -17,7 +17,7 @@ void processingTask(void *pvParameters){
             char buffer[BLE_MSG_SIZE];
             serializeJson(doc, buffer);
            
-            xQueueSend(bleQueue, &buffer, portMAX_DELAY);
+            xQueueSend(bleQueue, buffer, portMAX_DELAY);
         }
     }
 }

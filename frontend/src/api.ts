@@ -72,6 +72,74 @@ export async function getDoctors() {
   return await body.json();
 }
 
+export async function savePushToken(email: string, pushToken: string) {
+  const operation = put({
+    apiName: "MedtronicHealthAPI",
+    path: "/users/push-token",
+    options: { body: { email, pushToken } },
+  });
+  const { body } = await operation.response;
+  return await body.json();
+}
+
+export async function postReading(data: {
+  patientId: string;
+  pH: number;
+  voltage?: number;
+  timestamp?: string;
+}) {
+  const operation = post({
+    apiName: "MedtronicHealthAPI",
+    path: "/readings",
+    options: { body: data },
+  });
+  const { body } = await operation.response;
+  return await body.json();
+}
+
+export async function getPatient(patientId: string) {
+  const operation = get({
+    apiName: "MedtronicHealthAPI",
+    path: `/patients/${patientId}`,
+  });
+  const { body } = await operation.response;
+  return await body.json();
+}
+
+export async function getPatientReadings(patientId: string, limit = 20) {
+  const operation = get({
+    apiName: "MedtronicHealthAPI",
+    path: `/patients/${patientId}/readings`,
+    options: { queryParams: { limit: String(limit) } },
+  });
+  const { body } = await operation.response;
+  return await body.json();
+}
+
+export async function getAlerts(doctorEmail: string) {
+  const operation = get({
+    apiName: "MedtronicHealthAPI",
+    path: "/alerts",
+    options: { queryParams: { doctorEmail } },
+  });
+  const { body } = await operation.response;
+  return await body.json();
+}
+
+export async function acknowledgeAlert(data: {
+  patientId: string;
+  readingSK: string;
+  doctorEmail: string;
+}) {
+  const operation = post({
+    apiName: "MedtronicHealthAPI",
+    path: "/alerts/acknowledge",
+    options: { body: data },
+  });
+  const { body } = await operation.response;
+  return await body.json();
+}
+
 export async function fetchUserProfile(email: string) {
   const operation = get({
     apiName: "MedtronicHealthAPI",

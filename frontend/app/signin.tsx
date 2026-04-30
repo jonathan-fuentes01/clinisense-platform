@@ -29,7 +29,7 @@ export default function SignIn() {
 
   const isValid = useMemo(() => {
     const emailLike = username.includes("@") && username.includes(".");
-    return emailLike && password.length >= 6;
+    return emailLike && password.length > 0;
   }, [username, password]);
 
   const routeByRole = async () => {
@@ -49,7 +49,7 @@ export default function SignIn() {
 
     console.log("[routeByRole] isAdmin:", isAdmin, "→ navigating to:", isAdmin ? "/admin" : "/doctor");
 
-    if (isAdmin) router.replace("/admin");
+    if (isAdmin) router.replace("/admin/patients");
     else router.replace("/doctor/profile");
   };
 
@@ -58,7 +58,7 @@ export default function SignIn() {
     setError("");
 
     if (!isValid) {
-      setError("Please enter a valid Email and a password (6+ characters).");
+      setError("Please enter a valid email and password.");
       return;
     }
 
@@ -75,7 +75,11 @@ export default function SignIn() {
         await routeByRole();
         return;
       }
-      console.error("[handleSignIn] error:", e);
+      console.error("[handleSignIn] name:", e?.name);
+      console.error("[handleSignIn] message:", e?.message);
+      console.error("[handleSignIn] underlyingError:", e?.underlyingError);
+      console.error("[handleSignIn] cause:", e?.cause);
+
       setError(e?.message ?? "Sign in failed");
     } finally {
       setLoading(false);
@@ -164,9 +168,6 @@ export default function SignIn() {
                 fontSize: 16,
               }}
             />
-            <Text style={{ color: "#9aa0a6", fontSize: 12, marginTop: 2 }}>
-              Must be at least 6 characters.
-            </Text>
           </View>
 
           {/* Inline error */}
